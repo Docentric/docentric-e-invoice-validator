@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Docentric.ZuGFeRD.Validator.RestServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "https://localhost:57456;http://localhost:57457"
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json"
+}
