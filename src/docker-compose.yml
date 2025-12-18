@@ -1,0 +1,75 @@
+# This controls the naming of everything: images, networks, containers
+name: docentric-zugferd-validator
+
+services:
+  zugferd-validator:
+    # Explicit image name + tag (built locally)
+    image: docentric/zugferd-validator:latest
+
+    # Build settings
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Build arguments for versioning
+      args:
+        VERSION: ${VERSION:-2025.1.0}
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+      # Multi-platform builds (optional, requires buildx)
+      # platforms:
+      #   - linux/amd64
+      #   - linux/arm64
+
+    # Container name (what appears in `docker ps`)
+    container_name: docentric-zugferd-validator
+
+    # Ports (HTTP only — no HTTPS certs inside container)
+    ports:
+      - "8080:8080"
+
+    # Clean environment config for ASP.NET Core
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Docker"
+      ASPNETCORE_URLS: "http://+:8080"
+      ASPNETCORE_HTTP_PORTS: "8080"
+      # Optional: Application insights, logging, etc.
+      TZ: "UTC"
+
+    # Optional: logs directory
+    volumes:
+      - ./logs:/app/logs
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # Read-only root filesystem (if your app supports it)
+    # read_only: true
+    # tmpfs:
+    #   - /tmp
+    #   - /app/logs
+
+volumes:
+  app-logs:
+    driver: local

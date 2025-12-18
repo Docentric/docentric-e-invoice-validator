@@ -1,0 +1,88 @@
+{
+  // -------------------------------------------------------
+  // GENERAL EDITOR SETTINGS
+  // -------------------------------------------------------
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.wordWrap": "on",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.rulers": [ 120 ], // aligns with .editorconfig
+  "editor.trimAutoWhitespace": true,
+
+  // Highlight unused vars/imports
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "always",
+    "source.organizeImports": "always"
+  },
+
+  // -------------------------------------------------------
+  // TYPESCRIPT & JAVASCRIPT
+  // -------------------------------------------------------
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.validate.enable": true,
+  "javascript.validate.enable": true,
+
+  // Keep quotes consistent
+  "javascript.preferences.quoteStyle": "double",
+  "typescript.preferences.quoteStyle": "double",
+
+  // Tailwind CSS IntelliSense
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "tailwindCSS.emmetCompletions": true,
+
+  // -------------------------------------------------------
+  // PRETTIER (Optional but recommended)
+  // -------------------------------------------------------
+  "prettier.singleQuote": false,
+  "prettier.trailingComma": "all",
+  "prettier.printWidth": 120,
+  "prettier.useTabs": false,
+  "prettier.tabWidth": 2,
+  "prettier.semi": true,
+  "prettier.arrowParens": "always",
+
+  // If Prettier is installed, use it as default formatter
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  // -------------------------------------------------------
+  // TAILWIND
+  // -------------------------------------------------------
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+
+  // -------------------------------------------------------
+  // ESLINT (optional — enable if using ESLint)
+  // -------------------------------------------------------
+  "eslint.enable": true,
+  "eslint.alwaysShowStatus": true,
+  "eslint.run": "onType",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // -------------------------------------------------------
+  // VITE SPECIFIC
+  // -------------------------------------------------------
+  "files.exclude": {
+    "dist": true,
+    "node_modules": true
+  },
+  "search.exclude": {
+    "dist": true,
+    "node_modules": true
+  }
+}

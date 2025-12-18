@@ -1,0 +1,49 @@
+# Build outputs
+**/bin/
+**/obj/
+**/out/
+**/build/
+**/wwwroot/
+
+# Node modules and build artifacts
+**/node_modules/
+**/dist/
+**/.vite/
+**/.stamp
+
+# IDE and OS files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Documentation
+*.md
+LICENSE
+
+# Test files
+**/*Tests/
+**/*Test/
+
+# Logs
+**/logs/
+*.log
+
+# Temporary files
+**/tmp/
+**/temp/

@@ -1,0 +1,1 @@
+docker run --rm -p 18889:8080 docentric/mustang-project-rest:latest

@@ -1,0 +1,200 @@
+# top-most EditorConfig file
+root = true
+
+############################################################
+# GLOBAL SETTINGS
+############################################################
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 140
+
+############################################################
+# C# CODE STYLE (BACKEND)
+############################################################
+[*.cs]
+dotnet_language_version = latest
+
+# Indentation
+indent_size = 4
+
+# Using directives
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+csharp_using_directive_placement = outside_namespace:suggestion
+
+# var preferences
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+# Namespaces
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# Expression-bodied members
+csharp_style_expression_bodied_methods = true:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+
+# Pattern matching
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_pattern_matching_over_switch_expressions = true:suggestion
+
+# Nullability
+dotnet_style_null_propagation = true:suggestion
+dotnet_style_coalesce_expression = true:suggestion
+
+# Initializers
+dotnet_style_object_initializer = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+
+# Simplifications
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_simplified_interpolation = true:suggestion
+
+# Index/range
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+
+############################################################
+# C# NAMING RULES
+############################################################
+[*.cs]
+
+# Private fields: _camelCase
+dotnet_naming_rule.private_fields_should_be_camelcase.rule = private_fields_should_be_camelcase
+dotnet_naming_rule.private_fields_should_be_camelcase.severity = suggestion
+dotnet_naming_rule.private_fields_should_be_camelcase.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_camelcase.style = camelcase_underscore
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, internal, protected
+dotnet_naming_style.camelcase_underscore.capitalization = camel_case
+dotnet_naming_style.camelcase_underscore.required_prefix = _
+
+# Constants: PascalCase
+dotnet_naming_rule.constants.rule = constants_rule
+dotnet_naming_rule.constants.severity = suggestion
+dotnet_naming_rule.constants.symbols = constants
+dotnet_naming_rule.constants.style = pascalcase
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.pascalcase.capitalization = pascal_case
+
+# Interfaces: I-prefixed
+dotnet_naming_rule.interfaces.rule = interfaces_rule
+dotnet_naming_rule.interfaces.severity = suggestion
+dotnet_naming_rule.interfaces.symbols = interfaces
+dotnet_naming_rule.interfaces.style = iprefix
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_style.iprefix.capitalization = pascal_case
+dotnet_naming_style.iprefix.required_prefix = I
+
+############################################################
+# TYPESCRIPT / JAVASCRIPT (FRONTEND / SPA)
+############################################################
+
+[*.ts]
+indent_style = space
+indent_size = 2
+quote_type = double
+max_line_length = 120
+
+[*.tsx]
+indent_style = space
+indent_size = 2
+quote_type = double
+max_line_length = 120
+
+[*.js]
+indent_style = space
+indent_size = 2
+quote_type = double
+max_line_length = 120
+
+[*.jsx]
+indent_style = space
+indent_size = 2
+quote_type = double
+max_line_length = 120
+
+# Semicolons / trailing commas (for editors that honor JetBrains-style keys)
+ij_javascript_semicolon_after_statement = always
+ij_javascript_trailing_comma = true
+ij_javascript_jsx_attribute_value_alignment = align_multiline
+
+############################################################
+# XML (Configs, XDocument templates, etc.)
+############################################################
+[*.xml]
+indent_style = space
+indent_size = 2
+ij_xml_space_around_equal_sign = false
+ij_xml_keep_line_breaks = true
+ij_xml_align_attributes = false
+
+############################################################
+# MSBUILD & PROJECT FILES (.csproj, .esproj)
+############################################################
+[*.csproj]
+indent_style = space
+indent_size = 2
+
+[*.esproj]
+indent_style = space
+indent_size = 2
+
+############################################################
+# SOLUTION FILES (.sln)
+############################################################
+[*.sln]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+############################################################
+# JSON
+############################################################
+[*.json]
+indent_style = space
+indent_size = 2
+
+############################################################
+# YAML
+############################################################
+[*.yml]
+indent_style = space
+indent_size = 2
+
+############################################################
+# Markdown
+############################################################
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off
+
+############################################################
+# HTML / CSS
+############################################################
+[*.html]
+indent_style = space
+indent_size = 2
+
+[*.css]
+indent_style = space
+indent_size = 2
+
+############################################################
+# Dockerfiles
+############################################################
+[Dockerfile]
+indent_style = space
+indent_size = 2
