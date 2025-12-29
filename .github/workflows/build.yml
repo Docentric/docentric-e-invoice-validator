@@ -12,7 +12,7 @@ env:
   DOTNET_VERSION: '10.0.x'
   NODE_VERSION: '20.x'
   SOLUTION_PATH: 'src/Docentric.EInvoice.Validator.slnx'
-  DOCKER_IMAGE: 'docentric-einvoice-validator'
+  DOCKER_IMAGE: 'docentric/e-invoice-validator'
 
 jobs:
   build:
