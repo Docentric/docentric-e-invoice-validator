@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+namespace Docentric.EInvoice.Validator.RestServer.Contracts;
 
 /// <summary>
 /// Specifies the supported types of cryptographic checksums used for data integrity verification.

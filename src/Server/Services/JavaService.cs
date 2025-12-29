@@ -1,9 +1,7 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
-
-namespace Docentric.ZuGFeRD.Validator.RestServer.Services;
+namespace Docentric.EInvoice.Validator.RestServer.Services;
 
 /// <summary>
 /// Provides services for querying Java runtime information on the system.
