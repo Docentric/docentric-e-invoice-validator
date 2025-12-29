@@ -23,10 +23,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
 WORKDIR /src
 
 # Copy project file and restore dependencies
-COPY Server/Docentric.ZuGFeRD.Validator.RestServer.csproj Server/
+COPY Server/Docentric.EInvoice.Validator.RestServer.csproj Server/
 
 # Pass IsDockerBuild=true so the .esproj reference is skipped
-RUN dotnet restore Server/Docentric.ZuGFeRD.Validator.RestServer.csproj \
+RUN dotnet restore Server/Docentric.EInvoice.Validator.RestServer.csproj \
     /p:IsDockerBuild=true
 
 # Copy the rest of the application source code
@@ -37,7 +37,7 @@ COPY --from=spa-build /src/WebUI/dist /src/Server/wwwroot
 
 # Build and publish the application (skip SPA build targets, mark Docker build)
 WORKDIR /src/Server
-RUN dotnet publish Docentric.ZuGFeRD.Validator.RestServer.csproj \
+RUN dotnet publish Docentric.EInvoice.Validator.RestServer.csproj \
     -c Release \
     -o /app/publish \
     --no-restore \
@@ -65,13 +65,13 @@ ARG VERSION="25.1.0"
 ARG BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 ARG VCS_REF="$(git rev-parse --short HEAD)"
 
-LABEL org.opencontainers.image.title="Docentric ZuGFeRD, Factur-X and UBL Document Validator" \
-      org.opencontainers.image.description=".NET 10 REST API wrapper for Mustang-Project CLI to validate ZuGFeRD, Factur-X and UBL." \
+LABEL org.opencontainers.image.title="Docentric Electronic Invoice Validator" \
+      org.opencontainers.image.description=".NET 10 REST API wrapper for Mustang-Project CLI to validate Electronic Invoice (ZuGFeRD, Factur-X and UBL)." \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.vendor="Docentric" \
-      org.opencontainers.image.url="https://hub.docker.com/r/docentric/zugferd-validator" \
-      org.opencontainers.image.source="https://github.com/docentric/docentric-zugferd-validator" \
+      org.opencontainers.image.url="https://hub.docker.com/r/docentric/e-invoice-validator" \
+      org.opencontainers.image.source="https://github.com/docentric/docentric-e-invoice-validator" \
       org.opencontainers.image.licenses="MIT" \
       maintainer="klemen.novak@docentric.com"
 

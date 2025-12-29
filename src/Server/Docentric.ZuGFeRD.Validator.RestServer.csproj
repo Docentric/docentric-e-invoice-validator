@@ -4,18 +4,18 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
-   
+
     <!-- Assembly info generation and XML docs -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <!-- Product metadata -->
-    <Product>Docentric.ZuGFeRD.Validator.RestServer</Product>
-    <ProductName>Docentric ZuGFeRD and Factur-X Validator (Mustang Project .NET Test Tool)</ProductName>
-    <AssemblyTitle>Docentric ZuGFeRD and Factur-X Validator (Mustang Project .NET Test Tool)</AssemblyTitle>
+    <Product>Docentric.EInvoice.Validator.RestServer</Product>
+    <ProductName>Docentric Electronic Invoice Validator (Mustang Project .NET Test Tool)</ProductName>
+    <AssemblyTitle>Docentric Electronic Invoice Validator (Mustang Project .NET Test Tool)</AssemblyTitle>
     <Company>Docentric</Company>
     <Copyright>© 2015–2025 Docentric d.o.o. All rights reserved.</Copyright>
-    
+
       <!-- NuGet package version -->
     <Version>2025.1.0</Version>
 
@@ -37,7 +37,7 @@
 
     <!-- SpaProxy settings for Debug -->
     <SpaProxyServerUrl>http://localhost:53365</SpaProxyServerUrl>
-    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>	  
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
 
 	  <!-- Faster CI when you only need Release -->
 	  <RunSpaInDebug>true</RunSpaInDebug>
@@ -54,7 +54,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.*" />
     <!-- Redoc -->
     <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.*" />
-    
+
 	  <!-- SpaProxy package (use the latest major for your .NET version) -->
 	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.*" />
   </ItemGroup>
@@ -77,11 +77,11 @@
 
   <!-- Reference to the WebUI project (to enable debugging into the SPA code) -->
   <ItemGroup Condition="'$(IsDockerBuild)' != 'true'">
-    <ProjectReference Include="..\WebUI\Docentric.ZuGFeRD.Validator.WebUI.esproj">
+    <ProjectReference Include="..\WebUI\Docentric.EInvoice.Validator.WebUI.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
-  
+
 	<!-- Inputs that trigger a re-build of the SPA -->
   <ItemGroup Condition="'$(IsDockerBuild)' != 'true'">
 		<SpaSources Include="
