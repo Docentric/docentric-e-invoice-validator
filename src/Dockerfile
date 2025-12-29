@@ -112,4 +112,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
     CMD curl --fail --silent --max-time 3 http://localhost:8080/api/health || exit 1
 
 # Run the application
-ENTRYPOINT ["dotnet", "Docentric.ZuGFeRD.Validator.RestServer.dll"]
+ENTRYPOINT ["dotnet", "Docentric.EInvoice.Validator.RestServer.dll"]

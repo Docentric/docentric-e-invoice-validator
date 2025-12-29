@@ -48,14 +48,14 @@ Mustang-Project-DotNet/
 ├─ docker-run.cmd
 ├─ src/
 │  ├─ Server/
-│  │  ├─ Docentric.ZuGFeRD.Validator.RestServer.csproj
+│  │  ├─ Docentric.EInvoice.Validator.RestServer.csproj
 │  │  ├─ Program.cs
 │  │  ├─ ApiHandlers.cs
 │  │  ├─ Models/
 │  │  ├─ Properties/
 │  │  └─ wwwroot/             # built SPA (not tracked in Git)
 │  └─ WebUI/
-│     ├─ Docentric.ZuGFeRD.Validator.WebUI.esproj
+│     ├─ Docentric.EInvoice.Validator.WebUI.esproj
 │     ├─ package.json
 │     ├─ tsconfig*.json
 │     ├─ eslint.config.js
@@ -64,4 +64,4 @@ Mustang-Project-DotNet/
 │     ├─ index.html
 │     └─ src/
 └─ tests/
-   └─ Docentric.ZuGFeRD.Validator.Tests/ (optional, xUnit)
+   └─ Docentric.EInvoice.Validator.Tests/ (optional, xUnit)

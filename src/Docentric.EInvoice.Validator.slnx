@@ -6,8 +6,8 @@
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
     <File Path="../.gitignore" />
-    <File Path="../src/docker-build.cmd" />
-    <File Path="../src/docker-run.cmd" />
+    <File Path="docker-build.ps1" />
+    <File Path="docker-run.ps1" />
     <File Path=".dockerignore" />
     <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
