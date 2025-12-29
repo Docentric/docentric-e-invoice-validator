@@ -1,7 +1,9 @@
 using System.Reflection;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Configuration;
-using Docentric.ZuGFeRD.Validator.RestServer.Services;
+using Docentric.EInvoice.Validator.RestServer.Configuration;
+using Docentric.EInvoice.Validator.RestServer.Services;
+
+using JavaService = Docentric.EInvoice.Validator.RestServer.Services.JavaService;
 
 const string openApiVersion = "v1";
 const string openApiV1UriSufix = $"/openapi/{openApiVersion}.json";

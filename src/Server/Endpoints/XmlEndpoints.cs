@@ -1,12 +1,12 @@
 using System.Xml.Linq;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
-using Docentric.ZuGFeRD.Validator.RestServer.IO;
-using Docentric.ZuGFeRD.Validator.RestServer.Services;
+using Docentric.EInvoice.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.IO;
+using Docentric.EInvoice.Validator.RestServer.Services;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Endpoints;
+namespace Docentric.EInvoice.Validator.RestServer.Endpoints;
 
 /// <summary>
 /// Provides extension methods for mapping XML-related API endpoints to an ASP.NET Core application's routing

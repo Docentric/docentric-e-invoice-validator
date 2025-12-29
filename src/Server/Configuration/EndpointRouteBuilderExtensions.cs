@@ -1,6 +1,6 @@
-using Docentric.ZuGFeRD.Validator.RestServer.Endpoints;
+using Docentric.EInvoice.Validator.RestServer.Endpoints;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Configuration;
+namespace Docentric.EInvoice.Validator.RestServer.Configuration;
 
 /// <summary>
 /// Provides extension methods for configuring API endpoints.

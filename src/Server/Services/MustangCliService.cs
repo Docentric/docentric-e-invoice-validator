@@ -1,8 +1,8 @@
 using System.Diagnostics;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.Contracts;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Services;
+namespace Docentric.EInvoice.Validator.RestServer.Services;
 
 /// <summary>
 /// Provides methods for executing Mustang CLI commands to validate and extract ZuGFeRD/Factur-X data.

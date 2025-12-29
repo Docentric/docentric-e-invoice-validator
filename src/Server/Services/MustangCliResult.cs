@@ -1,4 +1,4 @@
-namespace Docentric.ZuGFeRD.Validator.RestServer.Services;
+namespace Docentric.EInvoice.Validator.RestServer.Services;
 
 /// <summary>
 /// Represents the result of a Mustang CLI command execution.

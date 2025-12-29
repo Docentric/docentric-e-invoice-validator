@@ -1,10 +1,7 @@
-using System.Diagnostics;
-using System.Text.RegularExpressions;
+using Docentric.EInvoice.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.Services;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
-using Docentric.ZuGFeRD.Validator.RestServer.Services;
-
-namespace Docentric.ZuGFeRD.Validator.RestServer.Endpoints;
+namespace Docentric.EInvoice.Validator.RestServer.Endpoints;
 
 /// <summary>
 /// Provides health check endpoints for monitoring server status and dependencies.

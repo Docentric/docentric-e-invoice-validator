@@ -1,4 +1,4 @@
-namespace Docentric.ZuGFeRD.Validator.RestServer.IO;
+namespace Docentric.EInvoice.Validator.RestServer.IO;
 
 /// <summary>
 /// Provides methods for validating file types based on their magic bytes (file signatures).

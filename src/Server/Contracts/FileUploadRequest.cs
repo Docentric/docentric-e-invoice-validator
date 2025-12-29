@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+namespace Docentric.EInvoice.Validator.RestServer.Contracts;
 
 /// <summary>
 /// Request to upload a file with optional checksum verification.

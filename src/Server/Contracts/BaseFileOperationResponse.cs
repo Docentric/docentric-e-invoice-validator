@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+namespace Docentric.EInvoice.Validator.RestServer.Contracts;
 
 /// <summary>
 /// Represents the base response for file operations performed by the ZuGFeRD/Factur-X/UBL validator.

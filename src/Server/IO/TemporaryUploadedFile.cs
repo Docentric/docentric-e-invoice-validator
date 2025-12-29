@@ -1,6 +1,6 @@
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.Contracts;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.IO;
+namespace Docentric.EInvoice.Validator.RestServer.IO;
 
 /// <summary>
 /// Stores an uploaded file as a temporary file on disk.
