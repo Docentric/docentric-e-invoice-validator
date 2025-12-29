@@ -2,7 +2,7 @@
 name: docentric-e-invoice-validator
 
 services:
-  zugferd-validator:
+  e-invoice-validator:
     # Explicit image name + tag (built locally)
     image: docentric/e-invoice-validator:latest
 

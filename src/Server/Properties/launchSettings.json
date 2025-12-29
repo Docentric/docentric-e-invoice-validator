@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "Docentric.ZuGFeRD.Validator.RestServer": {
+    "Docentric.EInvoice.Validator.RestServer": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
