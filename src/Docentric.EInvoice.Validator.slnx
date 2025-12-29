@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.gitignore" />
+    <File Path="../docker-build.cmd" />
+    <File Path="../docker-run.cmd" />
+    <File Path=".dockerignore" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+  </Folder>
+  <Project Path="Server/Docentric.EInvoice.Validator.RestServer.csproj" />
+  <Project Path="WebUI/Docentric.EInvoice.Validator.WebUI.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>
