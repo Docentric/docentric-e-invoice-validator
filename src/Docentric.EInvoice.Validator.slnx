@@ -1,10 +1,13 @@
 <Solution>
   <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path="../.github/workflows/build.yml" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
     <File Path="../.gitignore" />
-    <File Path="../docker-build.cmd" />
-    <File Path="../docker-run.cmd" />
+    <File Path="../src/docker-build.cmd" />
+    <File Path="../src/docker-run.cmd" />
     <File Path=".dockerignore" />
     <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
