@@ -6,14 +6,15 @@
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
     <File Path="../.gitignore" />
+    <File Path="Directory.Build.props" />
     <File Path="docker-build.ps1" />
     <File Path="docker-run.ps1" />
     <File Path=".dockerignore" />
     <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
   </Folder>
-  <Project Path="Server/Docentric.EInvoice.Validator.RestServer.csproj" />
-  <Project Path="WebUI/Docentric.EInvoice.Validator.WebUI.esproj">
+  <Project Path="Server/RestServer.csproj" />
+  <Project Path="WebUI/WebUI.esproj">
     <Build />
     <Deploy />
   </Project>

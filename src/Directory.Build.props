@@ -1,0 +1,25 @@
+<Project>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+
+        <!-- Product metadata -->
+        <Company>Docentric</Company>
+        <Copyright>© 2015–2026 Docentric d.o.o. All rights reserved.</Copyright>
+
+        <!-- NuGet package version -->
+        <!-- The value here is also driving the Docker image version -->
+        <Version>2025.1.0</Version>
+
+        <!-- Runtime binding identity (stable, rarely changed - only change the major and minor version) -->
+        <AssemblyVersion>$(Version).0</AssemblyVersion>
+
+        <!-- File version: updated per release / build -->
+        <FileVersion>$(Version).0</FileVersion>
+
+        <!-- Informational version: for About, logs, diagnostics -->
+        <Revision>$([System.DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))</Revision>
+        <InformationalVersion>$(Version).$(Revision)</InformationalVersion>
+    </PropertyGroup>
+</Project>
