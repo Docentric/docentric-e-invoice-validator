@@ -1,11 +1,10 @@
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle, XCircle, FileText, AlertCircle, Download, Beaker } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, Beaker, CheckCircle, Download, FileText, Upload, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ValidationResult {
   exitCode: number;
@@ -88,6 +87,8 @@ const Index = () => {
   const [operation, setOperation] = useState<OperationType>("validate-pdf");
   const [result, setResult] = useState<BaseFileOperationResult | null>(null);
   const [simulationMode, setSimulationMode] = useState(false);
+  const [healthData, setHealthData] = useState<ServerHealthResult | null>(null);
+  const [isLoadingHealth, setIsLoadingHealth] = useState(true);
   const { toast } = useToast();
 
   const getUrlInfo = () => {
@@ -107,11 +108,33 @@ const Index = () => {
       "validate-pdf": "api/pdf/validate-zugferd",
       "validate-xml": "api/xml/validate",
       "extract": "api/pdf/extract-zugferd-xml",
-      "convert-xml-to-pdf": "api/xml/convert-to-pdf"
+      "convert-xml-to-pdf": "api/xml/convert-to-pdf",
+      "health": "api/health"
     };
 
     return apiEndpoints[operation];
   };
+
+
+  // Fetch health check data on component mount
+  useEffect(() => {
+    const fetchHealthData = async () => {
+      try {
+        setIsLoadingHealth(true);
+        const response = await fetch(`${getUrlInfo().siteUrl}/${getApiEndPoint("health")}`);
+        if (response.ok) {
+          const data = await response.json() as ServerHealthResult;
+          setHealthData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch health data:", error);
+      } finally {
+        setIsLoadingHealth(false);
+      }
+    };
+
+    fetchHealthData();
+  }, []);
 
   // Mock response data for simulation
   const getMockResponse = <TOperation extends OperationType>(operation: TOperation): OperationResultMap[TOperation] => {
@@ -123,7 +146,7 @@ const Index = () => {
         diagnosticsErrorMessage: null,
         isValid: true,
         isSignatureValid: true,
-        validationReport:`<?xml version="1.0" encoding="UTF-8"?>
+        validationReport: `<?xml version="1.0" encoding="UTF-8"?>
 <validation filename="mock-invoice.pdf" datetime="2024-01-15 10:30:00">
   <pdf>
     <info>
@@ -257,7 +280,7 @@ const Index = () => {
 
     console.log(operation);
 
-    var filename: string = `Validation-Report-${Date.now()}.xml`;
+    let filename: string = `Validation-Report-${Date.now()}.xml`;
     if ((result as ExtractXmlFromPdfResult)?.xml) {
       filename = `Extracted-e-Invoice-attachment-${Date.now()}.xml`;
     }
@@ -388,7 +411,7 @@ const Index = () => {
 
       const toastTitle: string = `${operationLabels[operation]}`;
       type toastVariantType = "default" | "success" | "info" | "warning" | "destructive";
-      var toastVariant: toastVariantType = data.success ? "success" : "destructive";
+      let toastVariant: toastVariantType = data.success ? "success" : "destructive";
 
       if (operation === "validate-pdf" || operation === "validate-xml") {
         if ((data as PdfFileValidationResult | FileValidationResult)?.isValid === false) {
@@ -409,16 +432,18 @@ const Index = () => {
             return data.errorCode === "Success"
               ? `PDF generated successfully from ${file.name} (${fileSize} KB) in ${timeStr}`
               : `PDF generation failed after ${timeStr}. ${data.errorMessage || `Error code: ${data.errorCode}`}`;
-          case "validate-pdf":
+          case "validate-pdf": {
             const pdfResult = data as PdfFileValidationResult;
             return pdfResult.isValid
               ? `${file.name} (${fileSize} KB) is valid. Processed in ${timeStr}`
               : `${file.name} (${fileSize} KB) validation failed. Processed in ${timeStr}`;
-          case "validate-xml":
+          }
+          case "validate-xml": {
             const xmlResult = data as FileValidationResult;
             return xmlResult.isValid
               ? `${file.name} (${fileSize} KB) is valid. Processed in ${timeStr}`
               : `${file.name} (${fileSize} KB) validation failed. Processed in ${timeStr}`;
+          }
         }
       };
 
@@ -469,18 +494,52 @@ const Index = () => {
             Docentric ZuGFeRD, Factur-X and UBL Document Validator
           </h1>
           <p className="mt-2 text-muted-foreground">
-            A lightweight REST API wrapper around the <a href="https://github.com/Docentric/Mustang-CLI" target="_blank" rel="noopener noreferrer">Mustang-Project CLI</a> for validating ZuGFeRD, Factur-X and UBL documents. Fast, reliable, and easy to integrate.
+            A lightweight REST API wrapper around the <a href="https://github.com/Docentric/Mustang-CLI" target="_blank"
+              rel="noopener noreferrer">Mustang-Project CLI</a> for
+            validating ZuGFeRD, Factur-X and UBL documents. Fast, reliable, and easy to integrate.
           </p>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-success" />
-              <span className="font-semibold">Java:</span>
-              <span className="text-muted-foreground">Available (OpenJDK 17.0.2)</span>
+              {isLoadingHealth ? (
+                <>
+                  <AlertCircle className="h-4 w-4 text-muted-foreground animate-pulse" />
+                  <span className="font-semibold">Java:</span>
+                  <span className="text-muted-foreground">Checking...</span>
+                </>
+              ) : healthData?.javaPresent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-success" />
+                  <span className="font-semibold">Java:</span>
+                  <span className="text-muted-foreground">Available ({healthData.javaVersion})</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4 text-destructive" />
+                  <span className="font-semibold">Java:</span>
+                  <span className="text-muted-foreground">Not available</span>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-success" />
-              <span className="font-semibold">Mustang CLI:</span>
-              <span className="text-muted-foreground">Available (v2.21.0)</span>
+              {isLoadingHealth ? (
+                <>
+                  <AlertCircle className="h-4 w-4 text-muted-foreground animate-pulse" />
+                  <span className="font-semibold">Mustang CLI:</span>
+                  <span className="text-muted-foreground">Checking...</span>
+                </>
+              ) : healthData?.mustangCliPresent ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-success" />
+                  <span className="font-semibold">Mustang CLI:</span>
+                  <span className="text-muted-foreground">Available (v{healthData.mustangCliVersion})</span>
+                </>
+              ) : (
+                <>
+                  <XCircle className="h-4 w-4 text-destructive" />
+                  <span className="font-semibold">Mustang CLI:</span>
+                  <span className="text-muted-foreground">Not available</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -493,15 +552,17 @@ const Index = () => {
             <div className="bg-gradient-to-r from-primary to-accent p-6">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-2xl font-bold text-primary-foreground">Test your ZuGFeRD, Factur-X or UBL e-Invoices</h2>
+                  <h2 className="text-2xl font-bold text-primary-foreground">Test your ZuGFeRD, Factur-X or UBL
+                    e-Invoices</h2>
                   <p className="mt-1 text-primary-foreground/90">
                     Upload, validate, extract or convert files
                   </p>
                 </div>
-                { simulationModeEnabled && (
+                {simulationModeEnabled && (
                   <div className="flex items-center gap-3 bg-background/10 backdrop-blur-sm rounded-lg px-4 py-2">
                     <Beaker className="h-4 w-4 text-primary-foreground" />
-                    <Label htmlFor="simulation-mode" className="text-sm font-medium text-primary-foreground cursor-pointer">
+                    <Label htmlFor="simulation-mode"
+                      className="text-sm font-medium text-primary-foreground cursor-pointer">
                       Simulation Mode
                     </Label>
                     <Switch
@@ -520,11 +581,10 @@ const Index = () => {
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-                  isDragging
-                    ? "border-primary bg-primary/5 scale-105"
-                    : "border-border hover:border-primary/50"
-                }`}
+                className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-all ${isDragging
+                  ? "border-primary bg-primary/5 scale-105"
+                  : "border-border hover:border-primary/50"
+                  }`}
               >
                 <input
                   type="file"
@@ -550,7 +610,10 @@ const Index = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <Button
                     variant={operation === "validate-pdf" ? "default" : "outline"}
-                    onClick={() => { setResult(null); setOperation("validate-pdf"); }}
+                    onClick={() => {
+                      setResult(null);
+                      setOperation("validate-pdf");
+                    }}
                     className="h-auto py-4 flex flex-col items-start gap-2"
                   >
                     <span className="font-semibold">Validate PDF</span>
@@ -558,7 +621,10 @@ const Index = () => {
                   </Button>
                   <Button
                     variant={operation === "validate-xml" ? "default" : "outline"}
-                    onClick={() => { setResult(null); setOperation("validate-xml"); }}
+                    onClick={() => {
+                      setResult(null);
+                      setOperation("validate-xml");
+                    }}
                     className="h-auto py-4 flex flex-col items-start gap-2"
                   >
                     <span className="font-semibold">Validate XML</span>
@@ -566,7 +632,10 @@ const Index = () => {
                   </Button>
                   <Button
                     variant={operation === "extract" ? "default" : "outline"}
-                    onClick={() => { setResult(null); setOperation("extract"); }}
+                    onClick={() => {
+                      setResult(null);
+                      setOperation("extract");
+                    }}
                     className="h-auto py-4 flex flex-col items-start gap-2"
                   >
                     <span className="font-semibold">Extract XML from PDF</span>
@@ -574,7 +643,10 @@ const Index = () => {
                   </Button>
                   <Button
                     variant={operation === "convert-xml-to-pdf" ? "default" : "outline"}
-                    onClick={() => { setResult(null); setOperation("convert-xml-to-pdf"); } }
+                    onClick={() => {
+                      setResult(null);
+                      setOperation("convert-xml-to-pdf");
+                    }}
                     className="h-auto py-4 flex flex-col items-start gap-2"
                   >
                     <span className="font-semibold">Convert XML to PDF</span>
@@ -591,9 +663,9 @@ const Index = () => {
               >
                 {isLoading ? "Processing..." : (
                   operation === "extract" ? "Extract XML from PDF" :
-                  operation === "validate-xml" ? "Validate XML" :
-                  operation === "convert-xml-to-pdf" ? "Convert XML to PDF" :
-                  "Validate PDF"
+                    operation === "validate-xml" ? "Validate XML" :
+                      operation === "convert-xml-to-pdf" ? "Convert XML to PDF" :
+                        "Validate PDF"
                 )}
               </Button>
 
@@ -604,8 +676,8 @@ const Index = () => {
                     {result.success === true ? (
                       <CheckCircle className="h-8 w-8 text-success" />
                     ) : (
-                        /*<XCircle className="h-8 w-8 text-destructive" />*/
-                        <AlertCircle className="h-8 w-8 text-muted-foreground" />
+                      /*<XCircle className="h-8 w-8 text-destructive" />*/
+                      <AlertCircle className="h-8 w-8 text-muted-foreground" />
                     )}
                     <div>
                       <h3 className="text-xl font-bold capitalize">{result.success ? "valid" : "invalid"}</h3>
@@ -664,10 +736,12 @@ const Index = () => {
               <div className="flex-1">
                 <h3 className="font-semibold text-lg mb-2">ZUGFeRD Sample Corpus</h3>
                 <p className="text-muted-foreground mb-4">
-                  Access a comprehensive collection of sample files including ZUGFeRD, Factur-X, and UBL formats to test the validator with real-world examples.
+                  Access a comprehensive collection of sample files including ZUGFeRD, Factur-X, and UBL formats to test
+                  the validator with real-world examples.
                 </p>
                 <Button variant="outline" asChild>
-                  <a href="https://github.com/ZUGFeRD/corpus" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2">
+                  <a href="https://github.com/ZUGFeRD/corpus" target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2">
                     <Download className="h-4 w-4" />
                     View Sample Files on GitHub
                   </a>
@@ -706,7 +780,8 @@ const Index = () => {
                         <p className="text-sm text-muted-foreground mb-3">
                           Interactive API explorer with request/response examples
                         </p>
-                        <span className="text-xs font-mono text-primary">{getUrlInfo().siteUrl}/api/docs/swagger →</span>
+                        <span
+                          className="text-xs font-mono text-primary">{getUrlInfo().siteUrl}/api/docs/swagger →</span>
                       </div>
                     </div>
                   </Card>
@@ -801,19 +876,22 @@ const Index = () => {
                         <div className="space-y-1 text-sm">
                           <p>
                             <span className="font-semibold">Project:</span>{" "}
-                            <a href="https://mustangproject.org/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            <a href="https://mustangproject.org/" target="_blank" rel="noopener noreferrer"
+                              className="text-primary hover:underline">
                               https://mustangproject.org/
                             </a>
                           </p>
                           <p>
                             <span className="font-semibold">Mustang-CLI:</span>{" "}
-                            <a href="https://www.mustangproject.org/commandline/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            <a href="https://www.mustangproject.org/commandline/" target="_blank"
+                              rel="noopener noreferrer" className="text-primary hover:underline">
                               https://www.mustangproject.org/commandline/
                             </a>
                           </p>
                           <p>
                             <span className="font-semibold">Repository:</span>{" "}
-                            <a href="https://github.com/ZUGFeRD/mustangproject" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            <a href="https://github.com/ZUGFeRD/mustangproject" target="_blank"
+                              rel="noopener noreferrer" className="text-primary hover:underline">
                               https://github.com/ZUGFeRD/mustangproject
                             </a>
                           </p>
@@ -851,7 +929,10 @@ const Index = () => {
                 <h4 className="text-lg font-semibold mb-3">Kudos to Lovable</h4>
                 <div className="bg-muted p-4 rounded-lg text-sm text-muted-foreground">
                   <p>
-                    Special thanks to the <a href="https://lovable.dev/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Lovable platform</a> for accelerating development, improving code quality, and making the overall project experience smoother and more enjoyable.
+                    Special thanks to the <a href="https://lovable.dev/" target="_blank" rel="noopener noreferrer"
+                      className="text-primary hover:underline">Lovable platform</a> for
+                    accelerating development, improving code quality, and making the overall project experience smoother
+                    and more enjoyable.
                   </p>
                 </div>
               </div>
