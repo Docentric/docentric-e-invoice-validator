@@ -22,6 +22,9 @@ RUN npm run build
 FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
 WORKDIR /src
 
+# Copy Directory.Build.props file
+COPY Directory.Build.props Server/
+
 # Copy project file and restore dependencies
 COPY Server/RestServer.csproj Server/
 
