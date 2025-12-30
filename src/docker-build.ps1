@@ -1,8 +1,9 @@
 #!/usr/bin/env pwsh
 
-docker build -t docentric/e-invoice-validator:2025.1.0 -t docentric/e-invoice-validator:latest .
+docker build -t docentric/e-invoice-validator:2025.1.0-dev -t docentric/e-invoice-validator:latest-dev .
 
-if ($LASTEXITCODE -ne 0) {
+if ($LASTEXITCODE -ne 0)
+{
     Write-Error "Docker build failed with exit code $LASTEXITCODE"
     exit $LASTEXITCODE
 }
