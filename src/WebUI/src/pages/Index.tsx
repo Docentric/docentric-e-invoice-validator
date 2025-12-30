@@ -308,7 +308,7 @@ const Index = () => {
         const mockContent = operation === "validate-xml"
           ? '<?xml version="1.0"?><Invoice></Invoice>'
           : "%PDF-1.4 mock content";
-        
+
         const mockFile = new File([mockContent], mockFileName, { type: mockType });
         setFile(mockFile);
       }
@@ -341,7 +341,7 @@ const Index = () => {
     // Validate file type based on operation
     const isXML = file.name.toLowerCase().endsWith('.xml');
     const isPDF = file.name.toLowerCase().endsWith('.pdf');
-    
+
     if (operation === "validate-xml" && !isXML) {
       toast({
         title: "Invalid file type",
@@ -350,7 +350,7 @@ const Index = () => {
       });
       return;
     }
-    
+
     if ((operation === "validate-pdf" || operation === "extract") && !isPDF) {
       toast({
         title: "Invalid file type",
@@ -448,7 +448,7 @@ const Index = () => {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;") ?? "";
   }
-    
+
   const getResultFile = (source: BaseFileOperationResult) => {
     let result = (source as FileValidationResult | PdfFileValidationResult)?.validationReport ||
       (source as ExtractXmlFromPdfResult)?.xml;
@@ -480,7 +480,7 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-success" />
               <span className="font-semibold">Mustang CLI:</span>
-              <span className="text-muted-foreground">Available (v2.20.0)</span>
+              <span className="text-muted-foreground">Available (v2.21.0)</span>
             </div>
           </div>
         </div>
@@ -513,7 +513,7 @@ const Index = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* File Upload Area */}
               <div
@@ -590,8 +590,8 @@ const Index = () => {
                 size="lg"
               >
                 {isLoading ? "Processing..." : (
-                  operation === "extract" ? "Extract XML from PDF" : 
-                  operation === "validate-xml" ? "Validate XML" : 
+                  operation === "extract" ? "Extract XML from PDF" :
+                  operation === "validate-xml" ? "Validate XML" :
                   operation === "convert-xml-to-pdf" ? "Convert XML to PDF" :
                   "Validate PDF"
                 )}
