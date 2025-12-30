@@ -1,9 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
+    <RootNamespace>Docentric.EInvoice.Validator.RestServer</RootNamespace>
 
     <!-- Assembly info generation and XML docs -->
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
@@ -12,22 +10,8 @@
     <!-- Product metadata -->
     <Product>Docentric.EInvoice.Validator.RestServer</Product>
     <ProductName>Docentric Electronic Invoice Validator (Mustang Project .NET Test Tool)</ProductName>
+    <AssemblyName>Docentric.EInvoice.Validator.RestServer</AssemblyName>
     <AssemblyTitle>Docentric Electronic Invoice Validator (Mustang Project .NET Test Tool)</AssemblyTitle>
-    <Company>Docentric</Company>
-    <Copyright>© 2015–2025 Docentric d.o.o. All rights reserved.</Copyright>
-
-      <!-- NuGet package version -->
-    <Version>2025.1.0</Version>
-
-    <!-- Runtime binding identity (stable, rarely changed - only change the major and minor version) -->
-    <AssemblyVersion>2025.1.0.0</AssemblyVersion>
-
-    <!-- File version: updated per release / build -->
-    <FileVersion>2025.1.0.0</FileVersion>
-
-    <!-- Informational version: for About, logs, diagnostics -->
-    <Revision>$([System.DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))</Revision>
-    <InformationalVersion>2025.1.0.$(Revision)</InformationalVersion>
 
     <!-- Docker configuration -->
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -77,7 +61,7 @@
 
   <!-- Reference to the WebUI project (to enable debugging into the SPA code) -->
   <ItemGroup Condition="'$(IsDockerBuild)' != 'true'">
-    <ProjectReference Include="..\WebUI\Docentric.EInvoice.Validator.WebUI.esproj">
+    <ProjectReference Include="..\WebUI\WebUI.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
