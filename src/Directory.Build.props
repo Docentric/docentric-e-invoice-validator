@@ -9,8 +9,8 @@
         <Copyright>© 2015–2026 Docentric d.o.o. All rights reserved.</Copyright>
 
         <!-- NuGet package version -->
-        <!-- The value here is also driving the Docker image version -->
-        <Version>2025.1.0</Version>
+        <!-- The value here is also driving the Docker image version in the build pipelines -->
+        <Version>1.0.3</Version>
 
         <!-- Runtime binding identity (stable, rarely changed - only change the major and minor version) -->
         <AssemblyVersion>$(Version).0</AssemblyVersion>

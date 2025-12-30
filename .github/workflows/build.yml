@@ -3,7 +3,6 @@ name: Build
 on:
   push:
     branches: [ main, develop, feature/** ]
-    tags: [ v* ]
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
@@ -71,6 +70,13 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Extract version from Directory.Build.props
+      id: version
+      run: |
+        VERSION=$(grep -oP '<Version>\K[^<]+' src/Directory.Build.props)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+
     - name: Log in to Docker Hub
       # Only login when we're going to push (main branch or tags)
       if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
@@ -85,12 +91,10 @@ jobs:
       with:
         images: ${{ env.DOCKER_IMAGE }}
         tags: |
+          # Tag with version from Directory.Build.props (e.g., "2025.1.0")
+          type=raw,value=${{ steps.version.outputs.version }}
           # Tag with branch name (e.g., "main", "develop")
           type=ref,event=branch
-          # Tag with version for tags (e.g., "v1.0.0" -> "1.0.0")
-          type=semver,pattern={{version}}
-          # Tag with major.minor for tags (e.g., "v1.0.0" -> "1.0")
-          type=semver,pattern={{major}}.{{minor}}
           # Tag "latest" only for main branch
           type=raw,value=latest,enable={{is_default_branch}}
 
