@@ -23,10 +23,10 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
 WORKDIR /src
 
 # Copy project file and restore dependencies
-COPY Server/Docentric.EInvoice.Validator.RestServer.csproj Server/
+COPY Server/RestServer.csproj Server/
 
 # Pass IsDockerBuild=true so the .esproj reference is skipped
-RUN dotnet restore Server/Docentric.EInvoice.Validator.RestServer.csproj \
+RUN dotnet restore Server/RestServer.csproj \
     /p:IsDockerBuild=true
 
 # Copy the rest of the application source code
@@ -37,7 +37,7 @@ COPY --from=spa-build /src/WebUI/dist /src/Server/wwwroot
 
 # Build and publish the application (skip SPA build targets, mark Docker build)
 WORKDIR /src/Server
-RUN dotnet publish Docentric.EInvoice.Validator.RestServer.csproj \
+RUN dotnet publish RestServer.csproj \
     -c Release \
     -o /app/publish \
     --no-restore \

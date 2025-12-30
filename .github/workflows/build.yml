@@ -49,7 +49,7 @@ jobs:
       continue-on-error: true
 
     - name: Publish artifacts
-      run: dotnet publish src/Server/Docentric.EInvoice.Validator.RestServer.csproj --configuration Release --no-build --output ./publish
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --output ./publish
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
