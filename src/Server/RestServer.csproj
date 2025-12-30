@@ -79,6 +79,11 @@
 	</ItemGroup>
 
   <!-- Mustang CLI JAR file to be copied to output -->
+  <ItemGroup>
+    <None Update="Mustang-CLI-*.jar">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 	<!-- Ensure Node/npm exist (soft check; won’t fail build just for detection) -->
 	<Target Name="CheckNode"
