@@ -6,7 +6,7 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <summary>
 /// Provides services for querying Java runtime information on the system.
 /// </summary>
-public sealed partial class JavaService
+public sealed partial class JavaService(ILogger<JavaService> logger)
 {
     private const int JavaProcessTimeoutMs = 10_000;
 
@@ -60,8 +60,9 @@ public sealed partial class JavaService
 
             return new JavaInfoResult(IsAvailable: false, properties);
         }
-        catch
+        catch(Exception ex)
         {
+            logger.LogError(ex, "Failed to execute Java process.");
             // Any failure => not available, empty properties
             return new JavaInfoResult(IsAvailable: false, properties);
         }

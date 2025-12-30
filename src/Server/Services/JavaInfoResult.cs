@@ -5,7 +5,7 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// </summary>
 /// <param name="IsAvailable">Indicates whether Java is available on the system.</param>
 /// <param name="Properties">A dictionary containing Java system properties.</param>
-public sealed record class JavaInfoResult(bool IsAvailable, IDictionary<string, string> Properties)
+public sealed record JavaInfoResult(bool IsAvailable, IDictionary<string, string> Properties)
 {
     /// <summary>
     /// Gets the Java runtime version from the system properties.
