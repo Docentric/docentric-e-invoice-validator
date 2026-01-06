@@ -50,6 +50,8 @@ For local development, you need:
 - .NET 10 SDK
 - Node.js 20.x or later
 - Java Runtime Environment (JRE) 11 or later
+- Docker (for containerized deployment)
+- Visual Studio 2022 or JetBrains Rider (recommended IDEs)
 - Git
 
 ### Building from Source
@@ -78,7 +80,9 @@ For local development, you need:
    dotnet run --project src/Server/RestServer.csproj
    ```
 
-The application will be available at `https://localhost:5001` or `http://localhost:5000`.
+The application will be available at `https://localhost:57456` or `http://localhost:53365`.
+
+**Note**: When running locally (not via Docker), ensure you have Java Runtime Environment (JRE) 11 or later installed, as it's required for the Mustang Project validation engine.
 
 ### Building Docker Image Locally
 
@@ -90,12 +94,6 @@ cd src
 .\docker-build.ps1
 ```
 
-```bash
-# Linux/macOS
-cd src
-docker build -t docentric/e-invoice-validator:local .
-```
-
 Then run it:
 
 ```powershell
@@ -103,39 +101,17 @@ Then run it:
 .\docker-run.ps1
 ```
 
-```bash
-# Linux/macOS
-docker run -p 8080:8080 docentric/e-invoice-validator:local
-```
+The application will be available at `http://localhost:18889`.
 
 ## API Usage
 
-### Validate an e-Invoice
+For detailed API documentation and interactive testing, visit the Swagger UI at:
 
-**Endpoint**: `POST /api/validate`
-
-**Request**:
-```bash
-curl -X POST http://localhost:18889/api/validate \
-  -F "file=@path/to/invoice.pdf"
+```
+http://localhost:18889/api/docs/swagger/index.html
 ```
 
-**Response**:
-```json
-{
-  "isValid": true,
-  "validationMessages": [],
-  "fileName": "invoice.pdf"
-}
-```
-
-### Health Check
-
-**Endpoint**: `GET /health`
-
-```bash
-curl http://localhost:18889/health
-```
+The API provides endpoints for validating ZuGFeRD and Factur-X e-invoices in both PDF and XML formats.
 
 ## Architecture
 
