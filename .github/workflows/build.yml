@@ -152,7 +152,7 @@ jobs:
           # Tag with branch name (e.g., "main", "develop")
           type=ref,event=branch
           # Tag "latest" only for main branch
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=latest,enable=true
 
     # Build image for all branches, but only push to Docker Hub for main/tags
     - name: Build Docker image
