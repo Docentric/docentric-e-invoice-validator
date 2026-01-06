@@ -53,8 +53,9 @@ public sealed partial class JavaService(ILogger<JavaService> logger)
             // If we got here, java is at least callable
             return new JavaInfoResult(IsAvailable: true, properties);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException oce)
         {
+            logger.LogError(oce, "Operation was cancelled.");
             if (process?.HasExited == false)
                 process?.Kill(entireProcessTree: true);
 
