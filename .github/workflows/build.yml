@@ -69,19 +69,19 @@ jobs:
 
     # Publish framework-dependent version (requires .NET runtime on target)
     - name: Publish artifacts
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --output ./publish-rest-server
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --output ./publish/rest-server
 
     # Publish self-contained version with embedded runtime for linux-x64 (only for release builds)
     - name: Publish self-contained artifacts
       if: steps.is_release.outputs.value == 'true'
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 --output ./publish-rest-server-self-contained
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 --output ./publish/rest-server-self-contained
 
     # Upload artifacts with retention based on branch
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Docentric.EInvoice.Validator.RestServer
-        path: ./publish-rest-server
+        path: ./publish/rest-server
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Self-contained build only uploaded for release builds
@@ -90,12 +90,12 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Docentric.EInvoice.Validator.RestServer-Self-Contained
-        path: ./publish-rest-server-self-contained
+        path: ./publish/rest-server-self-contained
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Upload source code (only for release builds)
     - name: Upload source code
-      #if: steps.is_release.outputs.value == 'true'
+      if: steps.is_release.outputs.value == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: Source
@@ -106,7 +106,9 @@ jobs:
           !**/obj/
           !**/node_modules/
           !**/.vs/
-          !publish*/
+          !.git/
+          !publish/
+        include-hidden-files: true # needed for the hidden files and folders (starting with ., like .github, .gitignore, etc.)
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
   docker:
