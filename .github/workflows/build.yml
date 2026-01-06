@@ -26,14 +26,16 @@ jobs:
       uses: actions/checkout@v4
 
     # Determine if this is a release build (main branch or version tag)
-    # Used to control artifact retention and Docker push
+    # Sets artifact retention: 90 days for releases, 7 days for dev builds
     - name: Check if main or tag
       id: is_release
       run: |
         if [[ "${{ github.event_name }}" == "push" && ("${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == refs/tags/v*) ]]; then
           echo "value=true" >> $GITHUB_OUTPUT
+          echo "artifact_retention_days=90" >> $GITHUB_OUTPUT
         else
           echo "value=false" >> $GITHUB_OUTPUT
+          echo "artifact_retention_days=7" >> $GITHUB_OUTPUT
         fi
 
     # Setup build environment
@@ -74,13 +76,13 @@ jobs:
       if: steps.is_release.outputs.value == 'true'
       run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 --output ./publish-rest-server-self-contained
 
-    # Upload artifacts with retention based on branch (90 days for main/tags, 7 days for others)
+    # Upload artifacts with retention based on branch
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Docentric.EInvoice.Validator.RestServer
         path: ./publish-rest-server
-        retention-days: ${{ steps.is_release.outputs.value == 'true' && 90 || 7 }}
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Self-contained build only uploaded for release builds
     - name: Upload self-contained build artifacts
@@ -89,7 +91,23 @@ jobs:
       with:
         name: Docentric.EInvoice.Validator.RestServer-Self-Contained
         path: ./publish-rest-server-self-contained
-        retention-days: 90
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    # Upload source code (only for release builds)
+    - name: Upload source code
+      #if: steps.is_release.outputs.value == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Source
+        # Includes everything except build and publish folders
+        path: |
+          .
+          !**/bin/
+          !**/obj/
+          !**/node_modules/
+          !**/.vs/
+          !publish*/
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
   docker:
     name: Build & Push Docker Image
