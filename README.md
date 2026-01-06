@@ -216,7 +216,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ```
 MIT License
-Copyright (c) 2025 Docentric d.o.o.
+Copyright (c) 2026 Docentric d.o.o.
 ```
 
 ## Acknowledgments

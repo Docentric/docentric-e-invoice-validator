@@ -9,6 +9,8 @@
     <File Path="Directory.Build.props" />
     <File Path="docker-build.ps1" />
     <File Path="docker-run.ps1" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
     <File Path=".dockerignore" />
     <File Path="docker-compose.yml" />
     <File Path="Dockerfile" />
