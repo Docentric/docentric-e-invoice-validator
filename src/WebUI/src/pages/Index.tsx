@@ -491,7 +491,7 @@ const Index = () => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Docentric ZuGFeRD, Factur-X and UBL Document Validator
+            Docentric e-Invoice Document Validator
           </h1>
           <p className="mt-2 text-muted-foreground">
             A lightweight REST API wrapper around the <a href="https://github.com/Docentric/Mustang-CLI" target="_blank"

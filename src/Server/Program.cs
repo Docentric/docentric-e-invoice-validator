@@ -11,7 +11,7 @@ const string openApiV1UriSufix = $"/openapi/{openApiVersion}.json";
 string appTitle = Assembly
     .GetEntryAssembly()?
     .GetCustomAttribute<AssemblyTitleAttribute>()?
-    .Title ?? "Docentric ZuGFeRD and Factur-X Validator (Mustang Project .NET Test Tool)";
+    .Title ?? "Docentric e-Invoice Document Validator";
 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
