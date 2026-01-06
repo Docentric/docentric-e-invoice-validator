@@ -68,8 +68,8 @@ ARG VERSION="25.1.0"
 ARG BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 ARG VCS_REF="$(git rev-parse --short HEAD)"
 
-LABEL org.opencontainers.image.title="Docentric Electronic Invoice Validator" \
-      org.opencontainers.image.description=".NET 10 REST API wrapper for Mustang-Project CLI to validate Electronic Invoice (ZuGFeRD, Factur-X and UBL)." \
+LABEL org.opencontainers.image.title="Docentric e-Invoice Validator" \
+      org.opencontainers.image.description=".NET 10 REST API wrapper for Mustang-Project CLI to validate e-Invoice (ZuGFeRD, Factur-X and UBL)." \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.vendor="Docentric" \
