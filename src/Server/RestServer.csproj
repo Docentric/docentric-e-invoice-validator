@@ -9,9 +9,9 @@
 
     <!-- Product metadata -->
     <Product>Docentric.EInvoice.Validator.RestServer</Product>
-    <ProductName>Docentric Electronic Invoice Validator (Mustang Project .NET Test Tool)</ProductName>
+    <ProductName>Docentric e-Invoice Validator (Mustang Project .NET Test Tool)</ProductName>
     <AssemblyName>Docentric.EInvoice.Validator.RestServer</AssemblyName>
-    <AssemblyTitle>Docentric Electronic Invoice Validator (Mustang Project .NET Test Tool)</AssemblyTitle>
+    <AssemblyTitle>Docentric e-Invoice Validator (Mustang Project .NET Test Tool)</AssemblyTitle>
 
     <!-- Docker configuration -->
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
