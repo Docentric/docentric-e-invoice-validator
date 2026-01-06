@@ -53,7 +53,7 @@ jobs:
       run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --output ./publish-rest-server
 
     - name: Publish self-contained artifacts
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --self-contained true --output ./publish-rest-server-self-contained
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 --output ./publish-rest-server-self-contained
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
