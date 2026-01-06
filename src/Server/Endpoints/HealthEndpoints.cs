@@ -55,7 +55,7 @@ public static class HealthEndpoints
         try
         {
             JavaInfoResult javaInfo = await javaService.GetJavaInfoAsync();
-            return (javaInfo.IsAvailable, javaInfo.IsAvailable && !string.IsNullOrEmpty(javaInfo.RuntimeVersion) ? javaInfo.RuntimeVersion : null);
+            return (javaInfo.IsAvailable, javaInfo.RuntimeVersion);
         }
         catch
         {
@@ -69,15 +69,8 @@ public static class HealthEndpoints
     /// <returns>True if Mustang CLI is available, false otherwise.</returns>
     private static async Task<(bool present, string? version)> CheckMustangCliVersionAsync(MustangCliService mustangCliService)
     {
-        try
-        {
-            bool isAvailable = await mustangCliService.CheckAvailabilityAsync();
+        bool isAvailable = await mustangCliService.CheckAvailabilityAsync();
 
-            return (isAvailable, isAvailable ? MustangCliService.MustangCliVersion : null);
-        }
-        catch
-        {
-            return (false, null);
-        }
+        return (isAvailable, isAvailable ? MustangCliService.MustangCliVersion : null);
     }
 }
