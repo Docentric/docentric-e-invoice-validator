@@ -74,7 +74,7 @@ jobs:
     # Publish self-contained version with embedded runtime for linux-x64 (only for release builds)
     - name: Publish self-contained artifacts
       if: steps.is_release.outputs.value == 'true'
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 --output ./publish/rest-server-self-contained
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --output ./publish/rest-server-self-contained
 
     # Upload artifacts with retention based on branch
     - name: Upload build artifacts
@@ -147,7 +147,7 @@ jobs:
       with:
         images: ${{ env.DOCKER_IMAGE }}
         tags: |
-          # Tag with version from Directory.Build.props (e.g., "2025.1.0")
+          # Tag with version from Directory.Build.props (e.g., "2026.1.0")
           type=raw,value=${{ steps.version.outputs.version }}
           # Tag with branch name (e.g., "main", "develop")
           type=ref,event=branch

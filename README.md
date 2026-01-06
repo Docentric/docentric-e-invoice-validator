@@ -116,7 +116,7 @@ docker run -p 8080:8080 docentric/e-invoice-validator:local
 
 **Request**:
 ```bash
-curl -X POST http://localhost:8080/api/validate \
+curl -X POST http://localhost:18889/api/validate \
   -F "file=@path/to/invoice.pdf"
 ```
 
@@ -134,7 +134,7 @@ curl -X POST http://localhost:8080/api/validate \
 **Endpoint**: `GET /health`
 
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:18889/health
 ```
 
 ## Architecture
@@ -209,7 +209,7 @@ Pre-built Docker images are automatically published to Docker Hub:
 **Pull Image**:
 ```bash
 docker pull docentric/e-invoice-validator:latest
-docker pull docentric/e-invoice-validator:2015.1.0
+docker pull docentric/e-invoice-validator:latest
 ```
 
 ## Development
@@ -222,13 +222,7 @@ docker pull docentric/e-invoice-validator:2015.1.0
    dotnet run
    ```
 
-2. **Start the frontend** (in a separate terminal):
-   ```bash
-   cd src/WebUI
-   npm run dev
-   ```
-
-The frontend dev server runs on `http://localhost:5173` with hot reload enabled.
+The frontend dev server runs on `http://localhost:53365` with hot reload enabled.
 
 ### Running Tests
 
