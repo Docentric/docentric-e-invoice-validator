@@ -833,7 +833,7 @@ const Index = () => {
                 <h4 className="text-lg font-semibold mb-3">Project License (MIT)</h4>
                 <div className="bg-muted p-4 rounded-lg text-sm space-y-2">
                   <p className="font-mono text-xs">MIT License</p>
-                  <p className="font-mono text-xs">Copyright (c) 2025 Docentric</p>
+                  <p className="font-mono text-xs">Copyright (c) 2026 Docentric</p>
                   <p className="text-muted-foreground mt-3">
                     Permission is hereby granted, free of charge, to any person obtaining a copy
                     of this software and associated documentation files (the "Software"), to deal
