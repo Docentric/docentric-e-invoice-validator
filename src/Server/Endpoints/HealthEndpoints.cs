@@ -31,10 +31,10 @@ public static class HealthEndpoints
     /// Returns 200 OK with health status when all dependencies are available,
     /// or 404 Not Found when dependencies are missing.
     /// </returns>
-    private static async Task<IResult> HealthHandler(JavaService javaService, MustangCliService mustangCliService)
+    private static async Task<IResult> HealthHandler(JavaService javaService, MustangCliService mustangCliService, CancellationToken cancellationToken)
     {
-        (bool javaPresent, string? javaVersion) = await CheckJavaVersionAsync(javaService);
-        (bool mustangPresent, string? mustangVersion) = await CheckMustangCliVersionAsync(mustangCliService);
+        (bool javaPresent, string? javaVersion) = await CheckJavaVersionAsync(javaService, cancellationToken);
+        (bool mustangPresent, string? mustangVersion) = await CheckMustangCliVersionAsync(mustangCliService, cancellationToken);
 
         ServerHealthResponse response = new()
         {
@@ -51,11 +51,11 @@ public static class HealthEndpoints
     /// Checks if Java runtime is available and retrieves its version.
     /// </summary>
     /// <returns>A tuple indicating Java presence and version information.</returns>
-    private static async Task<(bool present, string? version)> CheckJavaVersionAsync(JavaService javaService)
+    private static async Task<(bool present, string? version)> CheckJavaVersionAsync(JavaService javaService, CancellationToken cancellationToken)
     {
         try
         {
-            JavaInfoResult javaInfo = await javaService.GetJavaInfoAsync();
+            JavaInfoResult javaInfo = await javaService.GetJavaInfoAsync(cancellationToken);
             return (javaInfo.IsAvailable, javaInfo.RuntimeVersion);
         }
         catch
@@ -68,9 +68,10 @@ public static class HealthEndpoints
     /// Checks if Mustang CLI tool is available and functional.
     /// </summary>
     /// <returns>True if Mustang CLI is available, false otherwise.</returns>
-    private static async Task<(bool present, string? version)> CheckMustangCliVersionAsync(MustangCliService mustangCliService)
+    ///
+    private static async Task<(bool present, string? version)> CheckMustangCliVersionAsync(MustangCliService mustangCliService, CancellationToken cancellationToken)
     {
-        bool isAvailable = await mustangCliService.CheckAvailabilityAsync();
+        bool isAvailable = await mustangCliService.CheckAvailabilityAsync(cancellationToken);
 
         return (isAvailable, isAvailable ? MustangCliService.MustangCliVersion : null);
     }

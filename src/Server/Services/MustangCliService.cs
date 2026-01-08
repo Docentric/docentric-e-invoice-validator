@@ -8,8 +8,7 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// Provides methods for executing Mustang CLI commands to validate and extract ZuGFeRD/Factur-X data.
 /// </summary>
 /// <param name="logger">The logger instance for logging information and errors.</param>
-/// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
-public sealed class MustangCliService(ILogger<MustangCliService> logger, CancellationToken cancellationToken)
+public sealed class MustangCliService(ILogger<MustangCliService> logger)
 {
     /// <summary>
     /// The version of Mustang CLI being used.
@@ -20,12 +19,61 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger, Cancell
     private const string FileEncoding = "-Dfile.encoding=UTF-8";
 
     /// <summary>
+    /// Validates a ZuGFeRD/Factur-X PDF file.
+    /// </summary>
+    /// <param name="sourceFilePath">The path to the PDF file to validate.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
+    /// <returns>A <see cref="MustangCliResult"/> containing validation results.</returns>
+    public Task<MustangCliResult> ValidateAsync(string sourceFilePath, CancellationToken cancellationToken)
+        => ExecuteAsync("validate", ["--source", sourceFilePath], cancellationToken);
+
+    /// <summary>
+    /// Extracts embedded XML from a ZuGFeRD/Factur-X PDF file.
+    /// </summary>
+    /// <param name="sourceFilePath">The path to the PDF file.</param>
+    /// <param name="outputFilePath">The path where the extracted XML should be saved.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
+    /// <returns>A <see cref="MustangCliResult"/> containing extraction results.</returns>
+    public Task<MustangCliResult> ExtractXmlAsync(string sourceFilePath, string outputFilePath, CancellationToken cancellationToken)
+        => ExecuteAsync("extract", ["--source", sourceFilePath, "--out", outputFilePath], cancellationToken);
+
+    /// <summary>
+    /// Converts Factur-X or UBL XML file to a PDF document.
+    /// </summary>
+    /// <param name="sourceFilePath">The path to the XML file.</param>
+    /// <param name="outputFilePath">The path where the generated PDF should be saved.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
+    /// <returns>A <see cref="MustangCliResult"/> containing convertsion results.</returns>
+    public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath, CancellationToken cancellationToken)
+        => ExecuteAsync("pdf", ["--source", sourceFilePath, "--out", outputFilePath], cancellationToken);
+
+
+    /// <summary>
+    /// Checks if Mustang CLI is available by executing the help command.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
+    /// <returns>True if Mustang CLI executed successfully, false otherwise.</returns>
+    public async Task<bool> CheckAvailabilityAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            MustangCliResult result = await ExecuteAsync("help", [], cancellationToken);
+            return result.IsSuccess;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Executes a Mustang CLI command with the specified action and arguments.
     /// </summary>
     /// <param name="action">The Mustang CLI action to perform (e.g., "validate", "extract", "help").</param>
     /// <param name="additionalArguments">Additional command-line arguments to pass to Mustang CLI.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>A <see cref="MustangCliResult"/> containing the exit code, stdout, and stderr.</returns>
-    private async Task<MustangCliResult> ExecuteAsync(string action, params string[] additionalArguments)
+    private async Task<MustangCliResult> ExecuteAsync(string action, string[] additionalArguments, CancellationToken cancellationToken)
     {
         ProcessStartInfo processStartInfo = new()
         {
@@ -85,50 +133,6 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger, Cancell
                 StandardOutput = stdout,
                 StandardError = stderr
             };
-        }
-    }
-
-    /// <summary>
-    /// Validates a ZuGFeRD/Factur-X PDF file.
-    /// </summary>
-    /// <param name="sourceFilePath">The path to the PDF file to validate.</param>
-    /// <returns>A <see cref="MustangCliResult"/> containing validation results.</returns>
-    public Task<MustangCliResult> ValidateAsync(string sourceFilePath)
-        => ExecuteAsync("validate", "--source", sourceFilePath);
-
-    /// <summary>
-    /// Extracts embedded XML from a ZuGFeRD/Factur-X PDF file.
-    /// </summary>
-    /// <param name="sourceFilePath">The path to the PDF file.</param>
-    /// <param name="outputFilePath">The path where the extracted XML should be saved.</param>
-    /// <returns>A <see cref="MustangCliResult"/> containing extraction results.</returns>
-    public Task<MustangCliResult> ExtractXmlAsync(string sourceFilePath, string outputFilePath)
-        => ExecuteAsync("extract", "--source", sourceFilePath, "--out", outputFilePath);
-
-    /// <summary>
-    /// Converts Factur-X or UBL XML file to a PDF document.
-    /// </summary>
-    /// <param name="sourceFilePath">The path to the XML file.</param>
-    /// <param name="outputFilePath">The path where the generated PDF should be saved.</param>
-    /// <returns>A <see cref="MustangCliResult"/> containing convertsion results.</returns>
-    public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath)
-        => ExecuteAsync("pdf", "--source", sourceFilePath, "--out", outputFilePath);
-
-
-    /// <summary>
-    /// Checks if Mustang CLI is available by executing the help command.
-    /// </summary>
-    /// <returns>True if Mustang CLI executed successfully, false otherwise.</returns>
-    public async Task<bool> CheckAvailabilityAsync()
-    {
-        try
-        {
-            MustangCliResult result = await ExecuteAsync("help");
-            return result.IsSuccess;
-        }
-        catch
-        {
-            return false;
         }
     }
 }

@@ -7,17 +7,17 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// Provides services for querying Java runtime information on the system.
 /// </summary>
 /// <param name="logger">The logger instance for logging information and errors.</param>
-/// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
-public sealed partial class JavaService(ILogger<JavaService> logger, CancellationToken cancellationToken)
+public sealed partial class JavaService(ILogger<JavaService> logger)
 {
     /// <summary>
     /// Retrieves information about the Java runtime installed on the system.
     /// </summary>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
     /// A <see cref="JavaInfoResult"/> indicating whether Java is available and containing
     /// any discovered Java system properties.
     /// </returns>
-    public async Task<JavaInfoResult> GetJavaInfoAsync()
+    public async Task<JavaInfoResult> GetJavaInfoAsync(CancellationToken cancellationToken)
     {
         var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
