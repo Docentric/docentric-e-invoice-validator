@@ -29,7 +29,7 @@ public static class Constants
         /// <summary>
         /// The URI suffix for the OpenAPI specification document.
         /// </summary>
-        public const string V1UriSufix = $"/openapi/{Version}.json";
+        public const string V1UriSuffix = $"/openapi/{Version}.json";
     }
 
     /// <summary>
@@ -40,12 +40,12 @@ public static class Constants
         /// <summary>
         /// Default timeout.
         /// </summary>
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+        public static TimeSpan DefaultTimeout => TimeSpan.FromSeconds(30);
 
         /// <summary>
         /// Timeout for long-running operations.
         /// </summary>
-        public static TimeSpan LongRunning = TimeSpan.FromSeconds(300);
+        public static TimeSpan LongRunning => TimeSpan.FromSeconds(300);
 
         /// <summary>
         /// Policy name for long-running operations.

@@ -53,17 +53,17 @@ app.UseRequestTimeouts();
 app.MapApiEndpoints();
 
 // Map OpenAPI endpoints from separate class
-app.MapOpenApi(Constants.OpenApi.V1UriSufix);
+app.MapOpenApi(Constants.OpenApi.V1UriSuffix);
 
 // Register Swagger / ReDoc middlewares
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint(Constants.OpenApi.V1UriSufix, $"{appTitle} API {Constants.OpenApi.Version}");
+    options.SwaggerEndpoint(Constants.OpenApi.V1UriSuffix, $"{appTitle} API {Constants.OpenApi.Version}");
     options.RoutePrefix = "api/docs/swagger";
 });
 app.UseReDoc(options =>
 {
-    options.SpecUrl = Constants.OpenApi.V1UriSufix;
+    options.SpecUrl = Constants.OpenApi.V1UriSuffix;
     options.RoutePrefix = "api/docs/redoc";
 });
 
