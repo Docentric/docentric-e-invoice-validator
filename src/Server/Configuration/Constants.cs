@@ -25,7 +25,7 @@ public static class Constants
         /// The API version identifier.
         /// </summary>
         public const string Version = "v1";
-        
+
         /// <summary>
         /// The URI suffix for the OpenAPI specification document.
         /// </summary>
@@ -38,15 +38,15 @@ public static class Constants
     public static class RequestTimeouts
     {
         /// <summary>
-        /// Default timeout in seconds.
+        /// Default timeout.
         /// </summary>
-        public const int DefaultInSeconds = 30;
-              
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
+
         /// <summary>
-        /// Timeout for long-running operations in seconds.
+        /// Timeout for long-running operations.
         /// </summary>
-        public const int LongRunningInSeconds = 300;
-        
+        public static TimeSpan LongRunning = TimeSpan.FromSeconds(300);
+
         /// <summary>
         /// Policy name for long-running operations.
         /// </summary>

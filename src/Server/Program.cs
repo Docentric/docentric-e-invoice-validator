@@ -23,12 +23,12 @@ builder.Services.AddRequestTimeouts(options =>
 {
     options.DefaultPolicy = new Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy
     {
-        Timeout = TimeSpan.FromSeconds(Constants.RequestTimeouts.DefaultInSeconds), // Default 60 second timeout
+        Timeout = Constants.RequestTimeouts.DefaultTimeout, // Default 60 second timeout
         TimeoutStatusCode = StatusCodes.Status408RequestTimeout
     };
 
     // Add named policies for specific endpoints
-    options.AddPolicy(Constants.RequestTimeouts.LongRunningPolicy, TimeSpan.FromSeconds(Constants.RequestTimeouts.LongRunningInSeconds));
+    options.AddPolicy(Constants.RequestTimeouts.LongRunningPolicy, Constants.RequestTimeouts.LongRunning);
 });
 
 // Define CORS for development only
