@@ -20,15 +20,16 @@ public static class FileTypeValidator
     /// Validates that the uploaded file is a PDF by checking its magic bytes.
     /// </summary>
     /// <param name="file">The uploaded file to validate.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>True if the file is a valid PDF, false otherwise.</returns>
-    public static async Task<bool> IsPdfAsync(IFormFile file)
+    public static async Task<bool> IsPdfAsync(IFormFile file, CancellationToken cancellationToken)
     {
         if (file.Length < _pdfSignature.Length)
             return false;
 
         await using Stream stream = file.OpenReadStream();
         byte[] buffer = new byte[_pdfSignature.Length];
-        int bytesRead = await stream.ReadAsync(buffer);
+        int bytesRead = await stream.ReadAsync(buffer, cancellationToken);
 
         if (bytesRead < _pdfSignature.Length)
             return false;
@@ -40,22 +41,23 @@ public static class FileTypeValidator
     /// Validates that the uploaded file is an XML file by checking its magic bytes.
     /// </summary>
     /// <param name="file">The uploaded file to validate.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>True if the file is a valid XML file, false otherwise.</returns>
     /// <remarks>
     /// This method checks for XML files with or without UTF-8 BOM, with or without XML declaration.
     /// It supports files starting with "&lt;?xml" or directly with a root element "&lt;".
     /// </remarks>
-    public static async Task<bool> IsXmlAsync(IFormFile file)
+    public static async Task<bool> IsXmlAsync(IFormFile file, CancellationToken cancellationToken)
     {
         if (file.Length == 0)
             return false;
 
         await using Stream stream = file.OpenReadStream();
-        
+
         // Read enough bytes to check for XML signatures
         int maxSignatureLength = Math.Max(_xmlSignatureWithBom.Length, _xmlSignature.Length);
         byte[] buffer = new byte[maxSignatureLength];
-        int bytesRead = await stream.ReadAsync(buffer);
+        int bytesRead = await stream.ReadAsync(buffer, cancellationToken);
 
         if (bytesRead == 0)
             return false;

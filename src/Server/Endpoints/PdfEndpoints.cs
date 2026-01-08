@@ -49,6 +49,7 @@ public static class PdfEndpoints
     /// <param name="request">The HTTP request containing the uploaded file.</param>
     /// <param name="mustangCliService">The Mustang CLI service for executing commands.</param>
     /// <param name="uploadedFile">The file upload request with the PDF file to validate.</param>
+    /// <param name="loggerFactory">The logger factory for creating loggers.</param>
     /// <returns>
     /// An <see cref="IResult"/> containing a <see cref="PdfFileValidationResponse"/> with validation results,
     /// including whether the file is valid, signature status, and a detailed validation report.
@@ -57,8 +58,9 @@ public static class PdfEndpoints
     /// This endpoint validates ZuGFeRD PDF files by invoking the Mustang CLI tool as an external Java process.
     /// The validation report is returned as XML format within the response.
     /// </remarks>
-    private static async Task<IResult> ValidateZuGFeRDPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ValidateZuGFeRDPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
+        ILogger logger = loggerFactory.CreateLogger(nameof(ValidateZuGFeRDPdfHandler));
         if (!request.HasFormContentType)
             return Results.BadRequest(new PdfFileValidationResponse
             {
@@ -66,7 +68,7 @@ public static class PdfEndpoints
                 ErrorMessage = "The request content type must be 'multipart/form-data'."
             });
 
-        if (!await FileTypeValidator.IsPdfAsync(uploadedFile.File))
+        if (!await FileTypeValidator.IsPdfAsync(uploadedFile.File, cancellationToken))
             return Results.BadRequest(new PdfFileValidationResponse
             {
                 ErrorCode = ErrorCode.InvalidFileFormat,
@@ -77,7 +79,7 @@ public static class PdfEndpoints
         {
             await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
 
-            MustangCliResult mustangCliResult = await mustangCliService.ValidateAsync(temporaryFile.FilePath);
+            MustangCliResult mustangCliResult = await mustangCliService.ValidateAsync(temporaryFile.FilePath, cancellationToken);
 
             if (mustangCliResult.ProcessStartFailed)
             {
@@ -99,7 +101,11 @@ public static class PdfEndpoints
                         status = attributeValue.Value;
                 }
             }
-            catch { /* keep status=unknown on parse issues */ }
+            catch (Exception ex)
+            {
+                /* keep status=unknown on parse issues */
+                logger.LogError(ex, "Failed to parse Mustang CLI XML output");
+            }
 
             int statusCode = StatusCodes.Status400BadRequest;
             if (mustangCliResult.ExitCode == (int)ErrorCode.Success)
@@ -116,6 +122,7 @@ public static class PdfEndpoints
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to validate ZuGFeRD PDF file");
             return Results.InternalServerError(new PdfFileValidationResponse
             {
                 ErrorCode = ErrorCode.InvalidRequest,
@@ -130,6 +137,8 @@ public static class PdfEndpoints
     /// <param name="request">The HTTP request containing the uploaded file.</param>
     /// <param name="mustangCliService">The Mustang CLI service for executing commands.</param>
     /// <param name="uploadedFile">The file upload request with the PDF file to extract XML from.</param>
+    /// <param name="loggerFactory">The logger factory for creating loggers.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
     /// An <see cref="IResult"/> containing an <see cref="ExtractXmlFromPdfResponse"/> with the extracted XML content
     /// if successful, or an error message if extraction fails.
@@ -138,8 +147,9 @@ public static class PdfEndpoints
     /// This endpoint extracts the embedded ZuGFeRD XML invoice data from a PDF file by invoking the Mustang CLI tool
     /// as an external Java process. The extracted XML file is automatically cleaned up after reading.
     /// </remarks>
-    private static async Task<IResult> ExtractZuGFeRDXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ExtractZuGFeRDXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
+        ILogger logger = loggerFactory.CreateLogger(nameof(ExtractZuGFeRDXmlHandler));
         if (!request.HasFormContentType)
             return Results.BadRequest(new ExtractXmlFromPdfResponse
             {
@@ -147,7 +157,7 @@ public static class PdfEndpoints
                 ErrorMessage = "The request content type must be 'multipart/form-data'."
             });
 
-        if (!await FileTypeValidator.IsPdfAsync(uploadedFile.File))
+        if (!await FileTypeValidator.IsPdfAsync(uploadedFile.File, cancellationToken))
             return Results.BadRequest(new ExtractXmlFromPdfResponse
             {
                 ErrorCode = ErrorCode.InvalidFileFormat,
@@ -162,7 +172,7 @@ public static class PdfEndpoints
 
             outputXml = Path.ChangeExtension(temporaryFile.FilePath, ".xml");
 
-            MustangCliResult mustangCliResult = await mustangCliService.ExtractXmlAsync(temporaryFile.FilePath, outputXml);
+            MustangCliResult mustangCliResult = await mustangCliService.ExtractXmlAsync(temporaryFile.FilePath, outputXml, cancellationToken);
 
             if (mustangCliResult.ProcessStartFailed)
             {
@@ -181,13 +191,14 @@ public static class PdfEndpoints
             {
                 ErrorCode = (ErrorCode)mustangCliResult.ExitCode,
                 DiagnosticsErrorMessage = mustangCliResult.ExitCode != (int)ErrorCode.Success ? mustangCliResult.StandardError : null,
-                Xml = mustangCliResult.ExitCode == 0 && outputXml != null && File.Exists(outputXml)
-                    ? await File.ReadAllTextAsync(outputXml)
+                Xml = mustangCliResult.ExitCode == 0 && File.Exists(outputXml)
+                    ? await File.ReadAllTextAsync(outputXml, cancellationToken)
                     : null,
             }, statusCode: statusCode);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to extract XML from ZuGFeRD PDF file");
             return Results.InternalServerError(new ExtractXmlFromPdfResponse
             {
                 ErrorCode = ErrorCode.InvalidRequest,
