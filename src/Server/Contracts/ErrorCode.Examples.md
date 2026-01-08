@@ -28,7 +28,7 @@ The `errorCode` field is serialized as a string (e.g., "FileNotFound") for bette
 ### Getting a Friendly Error Message
 
 ```csharp
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.Contracts;
 
 var errorCode = ErrorCode.FileNotFound;
 string friendlyMessage = errorCode.GetFriendlyMessage();

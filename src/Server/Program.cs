@@ -1,22 +1,34 @@
 using System.Reflection;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Configuration;
-using Docentric.ZuGFeRD.Validator.RestServer.Services;
+using Docentric.EInvoice.Validator.RestServer.Configuration;
+using Docentric.EInvoice.Validator.RestServer.Services;
 
-const string openApiVersion = "v1";
-const string openApiV1UriSufix = $"/openapi/{openApiVersion}.json";
+using JavaService = Docentric.EInvoice.Validator.RestServer.Services.JavaService;
 
 string appTitle = Assembly
     .GetEntryAssembly()?
     .GetCustomAttribute<AssemblyTitleAttribute>()?
-    .Title ?? "Docentric ZuGFeRD and Factur-X Validator (Mustang Project .NET Test Tool)";
+    .Title ?? Constants.Application.DefaultTitle;
 
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi(openApiVersion, options =>
+builder.Services.AddOpenApi(Constants.OpenApi.Version, options =>
 {
     options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+});
+
+// Add Request Timeout services
+builder.Services.AddRequestTimeouts(options =>
+{
+    options.DefaultPolicy = new Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy
+    {
+        Timeout = Constants.RequestTimeouts.DefaultTimeout, // Default 60 second timeout
+        TimeoutStatusCode = StatusCodes.Status408RequestTimeout
+    };
+
+    // Add named policies for specific endpoints
+    options.AddPolicy(Constants.RequestTimeouts.LongRunningPolicy, Constants.RequestTimeouts.LongRunning);
 });
 
 // Define CORS for development only
@@ -34,24 +46,25 @@ builder.Services.AddSingleton<MustangCliService>();
 
 WebApplication app = builder.Build();
 
+// Add Request Timeout middleware (must be early in pipeline)
+app.UseRequestTimeouts();
+
 // API endpoints registrations
 app.MapApiEndpoints();
 
 // Map OpenAPI endpoints from separate class
-app.MapOpenApi(openApiV1UriSufix);
+app.MapOpenApi(Constants.OpenApi.V1UriSuffix);
 
 // Register Swagger / ReDoc middlewares
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint(openApiV1UriSufix, $"{appTitle} API {openApiVersion}");
+    options.SwaggerEndpoint(Constants.OpenApi.V1UriSuffix, $"{appTitle} API {Constants.OpenApi.Version}");
     options.RoutePrefix = "api/docs/swagger";
-    //options.DocumentTitle = $"{appTitle} API {openApiVersion} - Swagger UI";
 });
 app.UseReDoc(options =>
 {
-    options.SpecUrl = openApiV1UriSufix;
+    options.SpecUrl = Constants.OpenApi.V1UriSuffix;
     options.RoutePrefix = "api/docs/redoc";
-    //options.DocumentTitle = $"{appTitle} API {openApiVersion} - ReDoc";
 });
 
 // Configure for reverse proxy scenarios (Azure App Service, nginx, etc.)

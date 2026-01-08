@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+namespace Docentric.EInvoice.Validator.RestServer.Contracts;
 
 /// <summary>
 /// Represents the base response for file operations performed by the ZuGFeRD/Factur-X/UBL validator.
@@ -22,18 +22,17 @@ public class BaseFileOperationResponse
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public ErrorCode ErrorCode { get; set; }
 
-    private string _errorMessage = string.Empty;
     /// <summary>
     /// The error message describing any extraction failures or issues.
     /// </summary>
     [JsonPropertyName("errorMessage")]
     public string ErrorMessage
     {
-        get => string.IsNullOrWhiteSpace(_errorMessage) && ErrorCode != ErrorCode.Success
+        get => string.IsNullOrWhiteSpace(field) && ErrorCode != ErrorCode.Success
             ? ErrorCode.GetFriendlyMessage()
-            : _errorMessage;
-        set => _errorMessage = value;
-    }
+            : field;
+        set;
+    } = string.Empty;
 
     /// <summary>
     /// Additional diagnostics message

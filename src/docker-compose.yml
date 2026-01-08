@@ -1,10 +1,10 @@
 # This controls the naming of everything: images, networks, containers
-name: docentric-zugferd-validator
+name: docentric-e-invoice-validator
 
 services:
-  zugferd-validator:
+  e-invoice-validator:
     # Explicit image name + tag (built locally)
-    image: docentric/zugferd-validator:latest
+    image: docentric/e-invoice-validator:latest
 
     # Build settings
     build:
@@ -12,7 +12,7 @@ services:
       dockerfile: Dockerfile
       # Build arguments for versioning
       args:
-        VERSION: ${VERSION:-2025.1.0}
+        VERSION: ${VERSION:-2026.1.0}
         BUILD_DATE: ${BUILD_DATE:-$(date -u +"%Y-%m-%dT%H:%M:%SZ")}
         VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
       # Multi-platform builds (optional, requires buildx)
@@ -21,7 +21,7 @@ services:
       #   - linux/arm64
 
     # Container name (what appears in `docker ps`)
-    container_name: docentric-zugferd-validator
+    container_name: docentric-e-invoice-validator
 
     # Ports (HTTP only — no HTTPS certs inside container)
     ports:
@@ -63,7 +63,7 @@ services:
     # Security options
     security_opt:
       - no-new-privileges:true
-    
+
     # Read-only root filesystem (if your app supports it)
     # read_only: true
     # tmpfs:

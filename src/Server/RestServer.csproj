@@ -1,0 +1,143 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <RootNamespace>Docentric.EInvoice.Validator.RestServer</RootNamespace>
+
+    <!-- Assembly info generation and XML docs -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Product metadata -->
+    <Product>Docentric.EInvoice.Validator.RestServer</Product>
+    <ProductName>Docentric e-Invoice Validator (Mustang Project .NET Test Tool)</ProductName>
+    <AssemblyName>Docentric.EInvoice.Validator.RestServer</AssemblyName>
+    <AssemblyTitle>Docentric e-Invoice Validator (Mustang Project .NET Test Tool)</AssemblyTitle>
+
+    <!-- Docker configuration -->
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+
+    <!-- Settings for SPA Root -->
+    <SpaRoot>..\WebUI\</SpaRoot>
+
+    <!-- SpaProxy settings for Debug -->
+    <SpaProxyServerUrl>http://localhost:53365</SpaProxyServerUrl>
+    <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
+
+	  <!-- Faster CI when you only need Release -->
+	  <RunSpaInDebug>true</RunSpaInDebug>
+
+    <!-- Detect if we're building in Docker -->
+    <IsDockerBuild Condition="'$(IsDockerBuild)' == ''">false</IsDockerBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- OpenAPI package (use the latest major for your .NET version) -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.*" />
+    <!-- Swagger -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.*" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="10.*" />
+    <!-- Redoc -->
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.*" />
+
+	  <!-- SpaProxy package (use the latest major for your .NET version) -->
+	  <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="10.*" />
+  </ItemGroup>
+
+  <!-- Ensure appsettings and web.config are copied to output -->
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.Docker.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="web.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Reference to the WebUI project (to enable debugging into the SPA code) -->
+  <ItemGroup Condition="'$(IsDockerBuild)' != 'true'">
+    <ProjectReference Include="..\WebUI\WebUI.esproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+	<!-- Inputs that trigger a re-build of the SPA -->
+  <ItemGroup Condition="'$(IsDockerBuild)' != 'true'">
+		<SpaSources Include="
+                    $(SpaRoot)src\**\*;
+                    $(SpaRoot)index.html;
+                    $(SpaRoot)tailwind.config.*;
+                    $(SpaRoot)postcss.config.*;
+                    $(SpaRoot)vite.config.*;
+                    $(SpaRoot)package.json;
+                    $(SpaRoot)package-lock.json" />
+	</ItemGroup>
+
+  <!-- Mustang CLI JAR file to be copied to output -->
+  <ItemGroup>
+    <None Update="Mustang-CLI-*.jar">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+	<!-- Ensure Node/npm exist (soft check; won’t fail build just for detection) -->
+	<Target Name="CheckNode"
+          BeforeTargets="NpmInstall"
+          Condition="'$(IsDockerBuild)' != 'true'">
+		<Exec Command="node -v" IgnoreExitCode="true" />
+		<Exec Command="npm -v" IgnoreExitCode="true" />
+	</Target>
+
+	<!-- npm ci (once), tracked by a stamp file -->
+	<Target Name="NpmInstall"
+          Inputs="$(SpaRoot)package-lock.json"
+          Outputs="$(SpaRoot)node_modules\.stamp"
+          Condition="'$(IsDockerBuild)' != 'true'">
+		<Message Text="Running npm ci in $(SpaRoot)" Importance="high" />
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm ci" />
+		<Touch Files="$(SpaRoot)node_modules\.stamp" AlwaysCreate="true" />
+	</Target>
+
+	<!-- Vite production build -->
+	<Target Name="ViteBuild"
+          DependsOnTargets="NpmInstall"
+          Inputs="@(SpaSources)"
+          Outputs="$(SpaRoot)dist\.stamp"
+          Condition="'$(IsDockerBuild)' != 'true'
+                      AND ('$(Configuration)' == 'Release'
+                           OR '$(RunSpaInDebug)' == 'true')">
+		<Message Text="Building SPA with Vite (npm run build) in $(SpaRoot)" Importance="high" />
+		<Exec WorkingDirectory="$(SpaRoot)" Command="npm run build" />
+		<Touch Files="$(SpaRoot)dist\.stamp" AlwaysCreate="true" />
+	</Target>
+
+	<!-- Copy dist → wwwroot for local run and publish -->
+	<Target Name="CopySpaToWwwroot"
+          DependsOnTargets="ViteBuild"
+          BeforeTargets="Build"
+          Condition="'$(IsDockerBuild)' != 'true'">
+		<Message Text="Copying SPA dist → wwwroot" Importance="high" />
+		<RemoveDir Directories="wwwroot" />
+		<MakeDir Directories="wwwroot" />
+		<ItemGroup>
+			<DistFiles Include="$(SpaRoot)dist\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(DistFiles)" DestinationFiles="@(DistFiles->'wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" />
+	</Target>
+
+	<!-- Ensure SPA files are also present in the publish folder -->
+	<Target Name="CopySpaToPublish"
+          DependsOnTargets="ViteBuild"
+          AfterTargets="Publish"
+          Condition="'$(IsDockerBuild)' != 'true'">
+		<ItemGroup>
+			<DistFilesPublish Include="$(SpaRoot)dist\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(DistFilesPublish)" DestinationFiles="@(DistFilesPublish->'$(PublishDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" />
+	</Target>
+</Project>

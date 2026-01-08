@@ -1,25 +1,23 @@
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
-
-namespace Docentric.ZuGFeRD.Validator.RestServer.Services;
+namespace Docentric.EInvoice.Validator.RestServer.Services;
 
 /// <summary>
 /// Provides services for querying Java runtime information on the system.
 /// </summary>
-public sealed partial class JavaService
+/// <param name="logger">The logger instance for logging information and errors.</param>
+public sealed partial class JavaService(ILogger<JavaService> logger)
 {
-    private const int JavaProcessTimeoutMs = 10_000;
-
     /// <summary>
     /// Retrieves information about the Java runtime installed on the system.
     /// </summary>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
     /// A <see cref="JavaInfoResult"/> indicating whether Java is available and containing
     /// any discovered Java system properties.
     /// </returns>
-    public async Task<JavaInfoResult> GetJavaInfoAsync()
+    public async Task<JavaInfoResult> GetJavaInfoAsync(CancellationToken cancellationToken)
     {
         var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -33,8 +31,6 @@ public sealed partial class JavaService
             CreateNoWindow = true,
         };
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(JavaProcessTimeoutMs));
-
         using var process = Process.Start(processStartInfo);
 
         if (process == null)
@@ -42,12 +38,12 @@ public sealed partial class JavaService
             return new JavaInfoResult(IsAvailable: false, properties);
         }
 
-        string stdout = await process.StandardOutput.ReadToEndAsync();
-        string stderr = await process.StandardError.ReadToEndAsync();
+        string stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
 
         try
         {
-            await process.WaitForExitAsync(cts.Token);
+            await process.WaitForExitAsync(cancellationToken);
 
             string allOutput = stdout + Environment.NewLine + stderr;
             properties = ParseJavaProperties(allOutput);
@@ -55,15 +51,17 @@ public sealed partial class JavaService
             // If we got here, java is at least callable
             return new JavaInfoResult(IsAvailable: true, properties);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException oce)
         {
-            if (process?.HasExited == false)
-                process?.Kill(entireProcessTree: true);
+            logger.LogError(oce, "Operation was cancelled.");
+            if (process.HasExited == false)
+                process.Kill(entireProcessTree: true);
 
             return new JavaInfoResult(IsAvailable: false, properties);
         }
-        catch
+        catch(Exception ex)
         {
+            logger.LogError(ex, "Failed to execute Java process.");
             // Any failure => not available, empty properties
             return new JavaInfoResult(IsAvailable: false, properties);
         }

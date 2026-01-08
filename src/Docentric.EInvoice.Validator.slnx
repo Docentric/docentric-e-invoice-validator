@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path="../.github/workflows/build.yml" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.editorconfig" />
+    <File Path="../.gitignore" />
+    <File Path="Directory.Build.props" />
+    <File Path="docker-build.ps1" />
+    <File Path="docker-run.ps1" />
+    <File Path="../LICENSE" />
+    <File Path="../README.md" />
+    <File Path=".dockerignore" />
+    <File Path="docker-compose.yml" />
+    <File Path="Dockerfile" />
+  </Folder>
+  <Project Path="Server/RestServer.csproj" />
+  <Project Path="WebUI/WebUI.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+</Solution>

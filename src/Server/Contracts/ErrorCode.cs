@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Contracts;
+namespace Docentric.EInvoice.Validator.RestServer.Contracts;
 
 /// <summary>
 /// Defines error codes used during ZuGFeRD/Factur-X validation.

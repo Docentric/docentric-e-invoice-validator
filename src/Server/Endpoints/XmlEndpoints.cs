@@ -1,12 +1,13 @@
 using System.Xml.Linq;
 
-using Docentric.ZuGFeRD.Validator.RestServer.Contracts;
-using Docentric.ZuGFeRD.Validator.RestServer.IO;
-using Docentric.ZuGFeRD.Validator.RestServer.Services;
+using Docentric.EInvoice.Validator.RestServer.Configuration;
+using Docentric.EInvoice.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.IO;
+using Docentric.EInvoice.Validator.RestServer.Services;
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Docentric.ZuGFeRD.Validator.RestServer.Endpoints;
+namespace Docentric.EInvoice.Validator.RestServer.Endpoints;
 
 /// <summary>
 /// Provides extension methods for mapping XML-related API endpoints to an ASP.NET Core application's routing
@@ -29,13 +30,17 @@ public static class XmlEndpoints
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<FileValidationResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<FileValidationResponse>(StatusCodes.Status400BadRequest, "application/json");
+            .Produces<FileValidationResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status408RequestTimeout)
+            .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/convert-to-pdf", ConvertXmlToPdfHandler)
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status400BadRequest, "application/json");
+            .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status408RequestTimeout)
+            .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         return endpoints;
     }
@@ -46,6 +51,8 @@ public static class XmlEndpoints
     /// <param name="request">The HTTP request containing the uploaded file.</param>
     /// <param name="mustangCliService">The Mustang CLI service for executing commands.</param>
     /// <param name="uploadedFile">The file upload request with the XML file to validate.</param>
+    /// <param name="loggerFactory">The logger factory for creating loggers.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
     /// An <see cref="IResult"/> containing a <see cref="FileValidationResponse"/> with validation results,
     /// including whether the file is valid and a detailed validation report.
@@ -54,8 +61,10 @@ public static class XmlEndpoints
     /// This endpoint validates Factur-X or UBL XML files by invoking the Mustang CLI tool as an external Java process.
     /// The validation report is returned as XML format within the response.
     /// </remarks>
-    public static async Task<IResult> ValidateXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ValidateXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
+        Thread.Sleep(TimeSpan.FromSeconds(10));
+        ILogger logger = loggerFactory.CreateLogger(nameof(XmlEndpoints));
         if (!request.HasFormContentType)
             return Results.BadRequest(new FileValidationResponse
             {
@@ -63,7 +72,7 @@ public static class XmlEndpoints
                 ErrorMessage = "The request content type must be 'multipart/form-data'."
             });
 
-        if (!await FileTypeValidator.IsXmlAsync(uploadedFile.File))
+        if (!await FileTypeValidator.IsXmlAsync(uploadedFile.File, cancellationToken))
             return Results.BadRequest(new FileValidationResponse
             {
                 ErrorCode = ErrorCode.InvalidFileFormat,
@@ -72,9 +81,9 @@ public static class XmlEndpoints
 
         try
         {
-            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
+            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile, cancellationToken);
 
-            MustangCliResult mustangCliResult = await mustangCliService.ValidateAsync(temporaryFile.FilePath);
+            MustangCliResult mustangCliResult = await mustangCliService.ValidateAsync(temporaryFile.FilePath, cancellationToken);
 
             if (mustangCliResult.ProcessStartFailed)
             {
@@ -96,7 +105,11 @@ public static class XmlEndpoints
                         status = attributeValue.Value;
                 }
             }
-            catch { /* keep status=unknown on parse issues */ }
+            catch(Exception ex)
+            {
+                 /* keep status=unknown on parse issues */
+                 logger.LogError(ex, "Failed to parse Mustang CLI XML output");
+            }
 
             int statusCode = StatusCodes.Status400BadRequest;
             if (mustangCliResult.ExitCode == (int)ErrorCode.Success)
@@ -112,6 +125,7 @@ public static class XmlEndpoints
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to process the uploaded file.");
             return Results.BadRequest(new FileValidationResponse
             {
                 ErrorCode = ErrorCode.InvalidRequest,
@@ -126,6 +140,8 @@ public static class XmlEndpoints
     /// <param name="request">The HTTP request containing the uploaded file.</param>
     /// <param name="mustangCliService">The Mustang CLI service for executing commands.</param>
     /// <param name="uploadedFile">The file upload request with the XML file to convert.</param>
+    /// <param name="loggerFactory">The logger factory for creating loggers.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
     /// An <see cref="IResult"/> containing a <see cref="ConvertXmlToPdfResponse"/> with the generated PDF content
     /// if successful, or an error message if conversion fails.
@@ -134,8 +150,9 @@ public static class XmlEndpoints
     /// This endpoint converts Factur-X or UBL XML invoice data to a PDF document by invoking the Mustang CLI tool
     /// as an external Java process. The generated PDF file is automatically cleaned up after reading.
     /// </remarks>
-    public static async Task<IResult> ConvertXmlToPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ConvertXmlToPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
+        ILogger logger = loggerFactory.CreateLogger(nameof(XmlEndpoints));
         if (!request.HasFormContentType)
             return Results.BadRequest(new ConvertXmlToPdfResponse
             {
@@ -143,7 +160,7 @@ public static class XmlEndpoints
                 ErrorMessage = "The request content type must be 'multipart/form-data'."
             });
 
-        if (!await FileTypeValidator.IsXmlAsync(uploadedFile.File))
+        if (!await FileTypeValidator.IsXmlAsync(uploadedFile.File, cancellationToken))
             return Results.BadRequest(new ConvertXmlToPdfResponse
             {
                 ErrorCode = ErrorCode.InvalidFileFormat,
@@ -154,11 +171,11 @@ public static class XmlEndpoints
 
         try
         {
-            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
+            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile, cancellationToken);
 
             outputPdf = Path.ChangeExtension(temporaryFile.FilePath, ".pdf");
 
-            MustangCliResult mustangCliResult = await mustangCliService.ConvertXmlToPdfAsync(temporaryFile.FilePath, outputPdf);
+            MustangCliResult mustangCliResult = await mustangCliService.ConvertXmlToPdfAsync(temporaryFile.FilePath, outputPdf, cancellationToken);
 
             if (mustangCliResult.ProcessStartFailed)
             {
@@ -177,13 +194,14 @@ public static class XmlEndpoints
             {
                 ErrorCode = (ErrorCode)mustangCliResult.ExitCode,
                 DiagnosticsErrorMessage = mustangCliResult.ExitCode != (int)ErrorCode.Success ? mustangCliResult.StandardError : null,
-                Pdf = mustangCliResult.ExitCode == 0 && outputPdf != null && File.Exists(outputPdf)
-                    ? await File.ReadAllBytesAsync(outputPdf)
+                Pdf = mustangCliResult.ExitCode == 0 && File.Exists(outputPdf)
+                    ? await File.ReadAllBytesAsync(outputPdf, cancellationToken)
                     : null,
             }, statusCode: statusCode);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Failed to process the uploaded file.");
             return Results.BadRequest(new ConvertXmlToPdfResponse
             {
                 ErrorCode = ErrorCode.InvalidRequest,
@@ -198,8 +216,9 @@ public static class XmlEndpoints
                 {
                     File.Delete(outputPdf);
                 }
-                catch
+                catch(Exception ex)
                 {
+                    logger.LogError(ex, "Error during cleanup of temporary PDF file on the path: {Path}.", outputPdf);
                     // Ignore any errors during cleanup
                 }
             }
