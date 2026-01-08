@@ -31,7 +31,7 @@ public static class HealthEndpoints
     /// Returns 200 OK with health status when all dependencies are available,
     /// or 404 Not Found when dependencies are missing.
     /// </returns>
-    public static async Task<IResult> HealthHandler(JavaService javaService, MustangCliService mustangCliService)
+    private static async Task<IResult> HealthHandler(JavaService javaService, MustangCliService mustangCliService)
     {
         (bool javaPresent, string? javaVersion) = await CheckJavaVersionAsync(javaService);
         (bool mustangPresent, string? mustangVersion) = await CheckMustangCliVersionAsync(mustangCliService);
