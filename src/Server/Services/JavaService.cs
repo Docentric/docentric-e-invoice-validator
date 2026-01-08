@@ -6,10 +6,10 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <summary>
 /// Provides services for querying Java runtime information on the system.
 /// </summary>
-public sealed partial class JavaService(ILogger<JavaService> logger)
+/// <param name="logger">The logger instance for logging information and errors.</param>
+/// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
+public sealed partial class JavaService(ILogger<JavaService> logger, CancellationToken cancellationToken)
 {
-    private const int JavaProcessTimeoutMs = 10_000;
-
     /// <summary>
     /// Retrieves information about the Java runtime installed on the system.
     /// </summary>
@@ -31,8 +31,6 @@ public sealed partial class JavaService(ILogger<JavaService> logger)
             CreateNoWindow = true,
         };
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(JavaProcessTimeoutMs));
-
         using var process = Process.Start(processStartInfo);
 
         if (process == null)
@@ -40,12 +38,12 @@ public sealed partial class JavaService(ILogger<JavaService> logger)
             return new JavaInfoResult(IsAvailable: false, properties);
         }
 
-        string stdout = await process.StandardOutput.ReadToEndAsync();
-        string stderr = await process.StandardError.ReadToEndAsync();
+        string stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
 
         try
         {
-            await process.WaitForExitAsync(cts.Token);
+            await process.WaitForExitAsync(cancellationToken);
 
             string allOutput = stdout + Environment.NewLine + stderr;
             properties = ParseJavaProperties(allOutput);

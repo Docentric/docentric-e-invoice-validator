@@ -7,7 +7,9 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <summary>
 /// Provides methods for executing Mustang CLI commands to validate and extract ZuGFeRD/Factur-X data.
 /// </summary>
-public sealed class MustangCliService
+/// <param name="logger">The logger instance for logging information and errors.</param>
+/// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
+public sealed class MustangCliService(ILogger<MustangCliService> logger, CancellationToken cancellationToken)
 {
     /// <summary>
     /// The version of Mustang CLI being used.
@@ -16,7 +18,6 @@ public sealed class MustangCliService
     private const string MustangJarFile = $"Mustang-CLI-{MustangCliVersion}.jar";
     private const string JavaMaxMemory = "-Xmx1G";
     private const string FileEncoding = "-Dfile.encoding=UTF-8";
-    private const int JavaProcessTimeoutMs = 20_000;
 
     /// <summary>
     /// Executes a Mustang CLI command with the specified action and arguments.
@@ -51,8 +52,6 @@ public sealed class MustangCliService
             processStartInfo.ArgumentList.Add(arg);
         }
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(JavaProcessTimeoutMs));
-
         using var process = Process.Start(processStartInfo);
 
         if (process == null)
@@ -60,12 +59,12 @@ public sealed class MustangCliService
             return MustangCliResult.Failed($"Failed to start Java process with Mustang CLI (action: {action}).");
         }
 
-        string stdout = await process.StandardOutput.ReadToEndAsync();
-        string stderr = await process.StandardError.ReadToEndAsync();
+        string stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken);
+        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
 
         try
         {
-            await process.WaitForExitAsync(cts.Token);
+            await process.WaitForExitAsync(cancellationToken);
 
             return new MustangCliResult
             {

@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 
+using Docentric.EInvoice.Validator.RestServer.Configuration;
 using Docentric.EInvoice.Validator.RestServer.Contracts;
 using Docentric.EInvoice.Validator.RestServer.IO;
 using Docentric.EInvoice.Validator.RestServer.Services;
@@ -29,13 +30,15 @@ public static class PdfEndpoints
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<PdfFileValidationResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<PdfFileValidationResponse>(StatusCodes.Status400BadRequest, "application/json");
+            .Produces<PdfFileValidationResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/extract-zugferd-xml", ExtractZuGFeRDXmlHandler)
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<ExtractXmlFromPdfResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<ExtractXmlFromPdfResponse>(StatusCodes.Status400BadRequest, "application/json");
+            .Produces<ExtractXmlFromPdfResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         return endpoints;
     }
