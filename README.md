@@ -236,6 +236,6 @@ Special thanks to the Mustang Project team for creating and maintaining the comp
 
 [Docentric](https://ax.docentric.com/about-us/) contributes to the Dynamics 365 and Power Platform community through free apps, knowledge platforms, and by organizing events that bring professionals together on both local and international levels – proving ourselves as community-first and community-driven Microsoft ISV Partner.
 
-## Support
+## Questions & Feedback
 
-For issues, questions, or contributions, please visit our [GitHub repository](https://github.com/Docentric/docentric-e-invoice-validator).
+Reach out to us at <support@docentric.com> if you have any questions or feedback.
