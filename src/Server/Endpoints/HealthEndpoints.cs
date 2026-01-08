@@ -1,3 +1,4 @@
+using Docentric.EInvoice.Validator.RestServer.Configuration;
 using Docentric.EInvoice.Validator.RestServer.Contracts;
 using Docentric.EInvoice.Validator.RestServer.Services;
 

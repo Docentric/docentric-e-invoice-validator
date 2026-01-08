@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 
+using Docentric.EInvoice.Validator.RestServer.Configuration;
 using Docentric.EInvoice.Validator.RestServer.Contracts;
 using Docentric.EInvoice.Validator.RestServer.IO;
 using Docentric.EInvoice.Validator.RestServer.Services;
@@ -29,13 +30,15 @@ public static class XmlEndpoints
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<FileValidationResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<FileValidationResponse>(StatusCodes.Status400BadRequest, "application/json");
+            .Produces<FileValidationResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/convert-to-pdf", ConvertXmlToPdfHandler)
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status400BadRequest, "application/json");
+            .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         return endpoints;
     }
