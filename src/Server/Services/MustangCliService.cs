@@ -43,7 +43,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// <param name="sourceFilePath">The path to the XML file.</param>
     /// <param name="outputFilePath">The path where the generated PDF should be saved.</param>
     /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
-    /// <returns>A <see cref="MustangCliResult"/> containing convertsion results.</returns>
+    /// <returns>A <see cref="MustangCliResult"/> containing conversion results.</returns>
     public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath, CancellationToken cancellationToken)
         => ExecuteAsync("pdf", ["--source", sourceFilePath, "--out", outputFilePath], cancellationToken);
 
