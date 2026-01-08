@@ -25,7 +25,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger, Cancell
     /// <param name="action">The Mustang CLI action to perform (e.g., "validate", "extract", "help").</param>
     /// <param name="additionalArguments">Additional command-line arguments to pass to Mustang CLI.</param>
     /// <returns>A <see cref="MustangCliResult"/> containing the exit code, stdout, and stderr.</returns>
-    public async Task<MustangCliResult> ExecuteAsync(string action, params string[] additionalArguments)
+    private async Task<MustangCliResult> ExecuteAsync(string action, params string[] additionalArguments)
     {
         ProcessStartInfo processStartInfo = new()
         {
