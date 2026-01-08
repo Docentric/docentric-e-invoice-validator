@@ -57,7 +57,7 @@ public static class PdfEndpoints
     /// This endpoint validates ZuGFeRD PDF files by invoking the Mustang CLI tool as an external Java process.
     /// The validation report is returned as XML format within the response.
     /// </remarks>
-    public static async Task<IResult> ValidateZuGFeRDPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ValidateZuGFeRDPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
     {
         if (!request.HasFormContentType)
             return Results.BadRequest(new PdfFileValidationResponse
@@ -138,7 +138,7 @@ public static class PdfEndpoints
     /// This endpoint extracts the embedded ZuGFeRD XML invoice data from a PDF file by invoking the Mustang CLI tool
     /// as an external Java process. The extracted XML file is automatically cleaned up after reading.
     /// </remarks>
-    public static async Task<IResult> ExtractZuGFeRDXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ExtractZuGFeRDXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
     {
         if (!request.HasFormContentType)
             return Results.BadRequest(new ExtractXmlFromPdfResponse

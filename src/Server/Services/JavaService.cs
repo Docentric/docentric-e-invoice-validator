@@ -54,8 +54,8 @@ public sealed partial class JavaService(ILogger<JavaService> logger, Cancellatio
         catch (OperationCanceledException oce)
         {
             logger.LogError(oce, "Operation was cancelled.");
-            if (process?.HasExited == false)
-                process?.Kill(entireProcessTree: true);
+            if (process.HasExited == false)
+                process.Kill(entireProcessTree: true);
 
             return new JavaInfoResult(IsAvailable: false, properties);
         }

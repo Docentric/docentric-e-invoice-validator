@@ -73,10 +73,11 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger, Cancell
                 StandardError = stderr
             };
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException oce)
         {
-            if (process?.HasExited == false)
-                process?.Kill(entireProcessTree: true);
+            logger.LogError(oce, "Operation was cancelled.");
+            if (process.HasExited == false)
+                process.Kill(entireProcessTree: true);
 
             return new MustangCliResult
             {

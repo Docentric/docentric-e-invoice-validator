@@ -57,7 +57,7 @@ public static class XmlEndpoints
     /// This endpoint validates Factur-X or UBL XML files by invoking the Mustang CLI tool as an external Java process.
     /// The validation report is returned as XML format within the response.
     /// </remarks>
-    public static async Task<IResult> ValidateXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ValidateXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
     {
         if (!request.HasFormContentType)
             return Results.BadRequest(new FileValidationResponse
@@ -137,7 +137,7 @@ public static class XmlEndpoints
     /// This endpoint converts Factur-X or UBL XML invoice data to a PDF document by invoking the Mustang CLI tool
     /// as an external Java process. The generated PDF file is automatically cleaned up after reading.
     /// </remarks>
-    public static async Task<IResult> ConvertXmlToPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
+    private static async Task<IResult> ConvertXmlToPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile)
     {
         if (!request.HasFormContentType)
             return Results.BadRequest(new ConvertXmlToPdfResponse
