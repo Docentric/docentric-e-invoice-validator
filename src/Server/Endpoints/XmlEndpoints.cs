@@ -180,7 +180,7 @@ public static class XmlEndpoints
             {
                 ErrorCode = (ErrorCode)mustangCliResult.ExitCode,
                 DiagnosticsErrorMessage = mustangCliResult.ExitCode != (int)ErrorCode.Success ? mustangCliResult.StandardError : null,
-                Pdf = mustangCliResult.ExitCode == 0 && outputPdf != null && File.Exists(outputPdf)
+                Pdf = mustangCliResult.ExitCode == 0 && File.Exists(outputPdf)
                     ? await File.ReadAllBytesAsync(outputPdf)
                     : null,
             }, statusCode: statusCode);
