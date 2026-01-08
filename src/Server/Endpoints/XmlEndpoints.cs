@@ -31,6 +31,7 @@ public static class XmlEndpoints
             .DisableAntiforgery()
             .Produces<FileValidationResponse>(StatusCodes.Status200OK, "application/json")
             .Produces<FileValidationResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status408RequestTimeout)
             .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/convert-to-pdf", ConvertXmlToPdfHandler)
@@ -38,6 +39,7 @@ public static class XmlEndpoints
             .DisableAntiforgery()
             .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status200OK, "application/json")
             .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status408RequestTimeout)
             .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         return endpoints;
@@ -61,6 +63,7 @@ public static class XmlEndpoints
     /// </remarks>
     private static async Task<IResult> ValidateXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
+        Thread.Sleep(TimeSpan.FromSeconds(10));
         ILogger logger = loggerFactory.CreateLogger(nameof(XmlEndpoints));
         if (!request.HasFormContentType)
             return Results.BadRequest(new FileValidationResponse
@@ -78,7 +81,7 @@ public static class XmlEndpoints
 
         try
         {
-            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
+            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile, cancellationToken);
 
             MustangCliResult mustangCliResult = await mustangCliService.ValidateAsync(temporaryFile.FilePath, cancellationToken);
 
@@ -168,7 +171,7 @@ public static class XmlEndpoints
 
         try
         {
-            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
+            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile, cancellationToken);
 
             outputPdf = Path.ChangeExtension(temporaryFile.FilePath, ".pdf");
 
@@ -213,8 +216,9 @@ public static class XmlEndpoints
                 {
                     File.Delete(outputPdf);
                 }
-                catch
+                catch(Exception ex)
                 {
+                    logger.LogError(ex, "Error during cleanup of temporary PDF file on the path: {Path}.", outputPdf);
                     // Ignore any errors during cleanup
                 }
             }

@@ -23,7 +23,7 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
     /// <summary>
     /// Creates a temporary file from the uploaded request and returns a disposable wrapper.
     /// </summary>
-    public static async Task<TemporaryUploadedFile> CreateAsync(FileUploadRequest request)
+    public static async Task<TemporaryUploadedFile> CreateAsync(FileUploadRequest request, CancellationToken cancellationToken)
     {
         if (request?.File == null)
             throw new ArgumentNullException(nameof(request.File), "The form in POST request did not contain a file.");
@@ -34,7 +34,7 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
         if (string.IsNullOrWhiteSpace(request.File.FileName))
             throw new ArgumentNullException(nameof(request.File.FileName), "File uploaded is missing a filename.");
 
-        // Keep original extension if present
+        // Keep the original extension if present
         string extension = Path.GetExtension(request.File.FileName);
         string tempFilePath = Path.Combine(
             Path.GetTempPath(),
@@ -42,7 +42,7 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
         );
 
         await using FileStream targetStream = File.Create(tempFilePath);
-        await request.File.CopyToAsync(targetStream);
+        await request.File.CopyToAsync(targetStream, cancellationToken);
 
         return new TemporaryUploadedFile(tempFilePath);
     }

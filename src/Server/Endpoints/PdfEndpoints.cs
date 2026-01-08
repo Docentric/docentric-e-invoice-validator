@@ -31,6 +31,7 @@ public static class PdfEndpoints
             .DisableAntiforgery()
             .Produces<PdfFileValidationResponse>(StatusCodes.Status200OK, "application/json")
             .Produces<PdfFileValidationResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status408RequestTimeout)
             .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/extract-zugferd-xml", ExtractZuGFeRDXmlHandler)
@@ -38,6 +39,7 @@ public static class PdfEndpoints
             .DisableAntiforgery()
             .Produces<ExtractXmlFromPdfResponse>(StatusCodes.Status200OK, "application/json")
             .Produces<ExtractXmlFromPdfResponse>(StatusCodes.Status400BadRequest, "application/json")
+            .Produces(StatusCodes.Status408RequestTimeout)
             .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         return endpoints;
@@ -77,7 +79,7 @@ public static class PdfEndpoints
 
         try
         {
-            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
+            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile, cancellationToken);
 
             MustangCliResult mustangCliResult = await mustangCliService.ValidateAsync(temporaryFile.FilePath, cancellationToken);
 
@@ -168,7 +170,7 @@ public static class PdfEndpoints
 
         try
         {
-            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile);
+            await using TemporaryUploadedFile temporaryFile = await TemporaryUploadedFile.CreateAsync(uploadedFile, cancellationToken);
 
             outputXml = Path.ChangeExtension(temporaryFile.FilePath, ".xml");
 
@@ -213,8 +215,9 @@ public static class PdfEndpoints
                 {
                     File.Delete(outputXml);
                 }
-                catch
+                catch(Exception ex)
                 {
+                    logger.LogError(ex, "Error during cleanup of temporary XML file on the path: {Path}.", outputXml);
                     // Ignore any errors during cleanup
                 }
             }
