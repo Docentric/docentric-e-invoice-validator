@@ -8,6 +8,10 @@ on:
     branches: [ main, develop ]
   workflow_dispatch:
 
+permissions:
+  contents: write  # Required for creating GitHub releases
+  packages: write  # Required for uploading artifacts
+
 env:
   DOTNET_VERSION: '10.0.x'
   NODE_VERSION: '20.x'
