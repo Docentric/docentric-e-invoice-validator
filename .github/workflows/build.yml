@@ -73,7 +73,7 @@ jobs:
 
     # Build and test
     - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore /p:Version=${{ steps.is_release.outputs.version }}
+      run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore /p:Version=${{ steps.is_release.outputs.version }} /p:TreatWarningsAsErrors=true
 
     - name: Run tests
       run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal
