@@ -59,7 +59,7 @@ jobs:
         echo "is_stable=$IS_STABLE_RELEASE" >> $GITHUB_OUTPUT
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-        if [[ "$IS_RELEASE" == "true" ]]; then
+        if [[ "$IS_STABLE_RELEASE" == "true" ]]; then
           echo "artifact_retention_days=90" >> $GITHUB_OUTPUT
         else
           echo "artifact_retention_days=7" >> $GITHUB_OUTPUT
