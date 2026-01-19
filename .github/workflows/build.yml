@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       is_release: ${{ steps.is_release.outputs.value }}
+      is_stable: ${{ steps.is_release.outputs.is_stable }}
       version: ${{ steps.is_release.outputs.version }}
 
     steps:
@@ -36,6 +37,7 @@ jobs:
       id: is_release
       run: |
         IS_RELEASE=false
+        IS_STABLE_RELEASE=false
         VERSION="0.0.0"  # Default version for non-release builds
 
         if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/v* ]]; then
@@ -43,9 +45,18 @@ jobs:
           TAG_NAME="${{ github.ref_name }}"
           VERSION="${TAG_NAME#v}"  # Remove 'v' prefix
           echo "Release build triggered by tag $TAG_NAME"
+
+          # Check if this is a stable release (no prerelease suffix like -preview, -beta, -rc)
+          if [[ ! "$VERSION" =~ - ]]; then
+            IS_STABLE_RELEASE=true
+            echo "This is a stable release (no prerelease suffix)"
+          else
+            echo "This is a prerelease version"
+          fi
         fi
 
         echo "value=$IS_RELEASE" >> $GITHUB_OUTPUT
+        echo "is_stable=$IS_STABLE_RELEASE" >> $GITHUB_OUTPUT
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
         if [[ "$IS_RELEASE" == "true" ]]; then
@@ -173,10 +184,10 @@ jobs:
       with:
         images: ${{ env.DOCKER_IMAGE }}
         tags: |
-          # Tag with version from Git tag (e.g., "v1.2.3" -> "1.2.3")
+          # Tag with version from Git tag (e.g., "v1.2.3" -> "1.2.3", "v1.2.3-preview.0" -> "1.2.3-preview.0")
           type=semver,pattern={{version}}
-          # Tag "latest" for release builds
-          type=raw,value=latest,enable=${{ needs.build.outputs.is_release == 'true' }}
+          # Tag "latest" only for stable releases (no prerelease suffix)
+          type=raw,value=latest,enable=${{ needs.build.outputs.is_stable == 'true' }}
 
     # Build and push Docker image only for v* tags
     - name: Build and push Docker image
