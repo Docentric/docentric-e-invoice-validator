@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-docker build -t docentric/e-invoice-validator:2026.1.0-dev -t docentric/e-invoice-validator:latest-dev .
+docker build -t docentric/e-invoice-validator:2026.2.0-dev -t docentric/e-invoice-validator:latest-dev .
 
 if ($LASTEXITCODE -ne 0)
 {
