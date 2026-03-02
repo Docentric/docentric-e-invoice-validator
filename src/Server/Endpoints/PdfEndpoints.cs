@@ -52,6 +52,7 @@ public static class PdfEndpoints
     /// <param name="mustangCliService">The Mustang CLI service for executing commands.</param>
     /// <param name="uploadedFile">The file upload request with the PDF file to validate.</param>
     /// <param name="loggerFactory">The logger factory for creating loggers.</param>
+    /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
     /// An <see cref="IResult"/> containing a <see cref="PdfFileValidationResponse"/> with validation results,
     /// including whether the file is valid, signature status, and a detailed validation report.

@@ -8,18 +8,12 @@
         <Company>Docentric</Company>
         <Copyright>© 2015–2026 Docentric d.o.o. All rights reserved.</Copyright>
 
-        <!-- NuGet package version -->
-        <!-- The value here is also driving the Docker image version in the build pipelines -->
-        <Version>2016.1.0</Version>
-
-        <!-- Runtime binding identity (stable, rarely changed - only change the major and minor version) -->
-        <AssemblyVersion>$(Version).0</AssemblyVersion>
-
-        <!-- File version: updated per release / build -->
-        <FileVersion>$(Version).0</FileVersion>
+        <!-- NuGet package version (supports semantic versioning with prerelease tags) -->
+        <!-- Default placeholder version. For release builds, this is overridden by the Git tag version passed via /p:Version parameter in the build pipeline -->
+        <Version>0.0.0</Version>
 
         <!-- Informational version: for About, logs, diagnostics -->
         <Revision>$([System.DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))</Revision>
-        <InformationalVersion>$(Version).$(Revision)</InformationalVersion>
+        <InformationalVersion>$(Version)+$(Revision)</InformationalVersion>
     </PropertyGroup>
 </Project>
