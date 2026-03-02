@@ -38,11 +38,17 @@ public sealed partial class JavaService(ILogger<JavaService> logger)
             return new JavaInfoResult(IsAvailable: false, properties);
         }
 
-        string stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+        // Read both streams concurrently to avoid deadlock
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
         try
         {
+            // Wait for both reads to complete
+            await Task.WhenAll(stdoutTask, stderrTask);
+            string stdout = await stdoutTask;
+            string stderr = await stderrTask;
+
             await process.WaitForExitAsync(cancellationToken);
 
             string allOutput = stdout + Environment.NewLine + stderr;
