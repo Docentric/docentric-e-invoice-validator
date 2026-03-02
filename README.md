@@ -178,7 +178,7 @@ Pre-built Docker images are automatically published to Docker Hub:
 
 **Available Tags**:
 - `latest` - Latest stable release from the main branch
-- `2015.1.0` - Specific version tags
+- `2026.2.0` - Specific version tags
 - `main` - Latest build from main branch
 - `develop` - Latest development build
 
