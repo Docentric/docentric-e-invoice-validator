@@ -99,7 +99,10 @@ public static class PdfEndpoints
                 if (!string.IsNullOrWhiteSpace(mustangCliResult.StandardOutput))
                 {
                     var mustangCliXmlResult = XDocument.Parse(mustangCliResult.StandardOutput);
-                    XElement? summary = mustangCliXmlResult.Root?.Descendants("summary").FirstOrDefault();
+                    // Use direct child Elements() instead of Descendants() to target the top-level <summary status="..."/>
+                    // which represents the overall validation result aggregating both <pdf> and <xml> sub-results.
+                    // See: https://www.mustangproject.org/commandline/#validate
+                    XElement? summary = mustangCliXmlResult.Root?.Elements("summary").FirstOrDefault();
                     if (summary?.Attribute("status") is { } attributeValue)
                         status = attributeValue.Value;
                 }
