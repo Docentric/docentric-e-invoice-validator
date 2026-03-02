@@ -3,7 +3,7 @@
 Download mustang-cli from Maven Central:
 https://mvnrepository.com/artifact/org.mustangproject/Mustang-CLI
 or directly from their site:
-https://www.mustangproject.org/commandline/ ==> https://www.mustangproject.org/deploy/Mustang-CLI-2.20.0.jar
+https://www.mustangproject.org/commandline/ ==> https://www.mustangproject.org/deploy/Mustang-CLI-2.22.0.jar
 
 ## What this solution does
 This repository contains the front-end for the ZUGFeRD Mustang UI, a Vite + React + TypeScript application styled with Tailwind CSS and shadcn/ui components. The new automation scripts streamline getting from source code to the generated production HTML that ships in `dist/`. Each script installs the required Node.js dependencies (if needed) and triggers the framework's production build so you always end up with the final static assets.

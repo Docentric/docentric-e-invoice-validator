@@ -13,7 +13,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// <summary>
     /// The version of Mustang CLI being used.
     /// </summary>
-    public const string MustangCliVersion = "2.21.0";
+    public const string MustangCliVersion = "2.22.0";
     private const string MustangJarFile = $"Mustang-CLI-{MustangCliVersion}.jar";
     private const string JavaMaxMemory = "-Xmx1G";
     private const string FileEncoding = "-Dfile.encoding=UTF-8";
