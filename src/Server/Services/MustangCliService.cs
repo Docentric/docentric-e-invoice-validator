@@ -13,7 +13,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// <summary>
     /// The version of Mustang CLI being used.
     /// </summary>
-    public const string MustangCliVersion = "2.21.0";
+    public const string MustangCliVersion = "2.22.0";
     private const string MustangJarFile = $"Mustang-CLI-{MustangCliVersion}.jar";
     private const string JavaMaxMemory = "-Xmx1G";
     private const string FileEncoding = "-Dfile.encoding=UTF-8";
@@ -107,11 +107,17 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
             return MustangCliResult.Failed($"Failed to start Java process with Mustang CLI (action: {action}).");
         }
 
-        string stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-        string stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
+        // Read both streams concurrently to avoid deadlock
+        Task<string> stdoutTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync(cancellationToken);
 
         try
         {
+            // Wait for both reads to complete
+            await Task.WhenAll(stdoutTask, stderrTask);
+            string stdout = await stdoutTask;
+            string stderr = await stderrTask;
+
             await process.WaitForExitAsync(cancellationToken);
 
             return new MustangCliResult
@@ -130,8 +136,8 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
             return new MustangCliResult
             {
                 ExitCode = (int)ErrorCode.ProcessingTimeout,
-                StandardOutput = stdout,
-                StandardError = stderr
+                StandardOutput = string.Empty,
+                StandardError = string.Empty
             };
         }
     }

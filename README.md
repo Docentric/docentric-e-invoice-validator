@@ -51,7 +51,7 @@ For local development, you need:
 - Node.js 20.x or later
 - Java Runtime Environment (JRE) 11 or later
 - Docker (for containerized deployment)
-- Visual Studio 2022 or JetBrains Rider (recommended IDEs)
+- Visual Studio 2026 or JetBrains Rider (recommended IDEs)
 - Git
 
 ### Building from Source
