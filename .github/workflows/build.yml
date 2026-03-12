@@ -165,6 +165,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v4
+
     # Setup Docker with buildx for advanced build features
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -195,6 +198,7 @@ jobs:
       with:
         context: ./src
         file: ./src/Dockerfile
+        platforms: linux/amd64,linux/arm64
         push: ${{ needs.build.outputs.is_release == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
