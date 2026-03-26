@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Beaker, CheckCircle, Download, FileText, Upload, XCircle } from "lucide-react";
+import { AlertCircle, Beaker, CheckCircle, Download, FileText, MinusCircle, Upload, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface ValidationResult {
@@ -418,8 +418,14 @@ const Index = () => {
       let toastVariant: toastVariantType = data.success ? "success" : "destructive";
 
       if (operation === "validate-pdf" || operation === "validate-xml") {
-        if ((data as PdfFileValidationResult | FileValidationResult)?.isValid === false) {
-          toastVariant = "warning";
+        const validationResult = data as PdfFileValidationResult | FileValidationResult;
+        if (validationResult?.isValid === false) {
+          toastVariant = "destructive";
+        } else if (operation === "validate-pdf") {
+          const pdfResult = data as PdfFileValidationResult;
+          if (!pdfResult.isPdfValid) {
+            toastVariant = "warning";
+          }
         }
       }
 
@@ -438,9 +444,11 @@ const Index = () => {
               : `PDF generation failed after ${timeStr}. ${data.errorMessage || `Error code: ${data.errorCode}`}`;
           case "validate-pdf": {
             const pdfResult = data as PdfFileValidationResult;
-            return pdfResult.isValid
-              ? `${file.name} (${fileSize} KB) is valid. Processed in ${timeStr}`
-              : `${file.name} (${fileSize} KB) validation failed. Processed in ${timeStr}`;
+            if (!pdfResult.isValid)
+              return `${file.name} (${fileSize} KB) is invalid. Processed in ${timeStr}`;
+            if (!pdfResult.isPdfValid)
+              return `${file.name} (${fileSize} KB) is valid. PDF/A-3 has warnings (BR-FX-DE-03). Processed in ${timeStr}`;
+            return `${file.name} (${fileSize} KB) is valid. Processed in ${timeStr}`;
           }
           case "validate-xml": {
             const xmlResult = data as FileValidationResult;
@@ -715,7 +723,7 @@ const Index = () => {
                         <div className="flex items-center gap-1.5">
                           {pdfResult.isSignatureValid
                             ? <CheckCircle className="h-4 w-4 text-success" />
-                            : <AlertCircle className="h-4 w-4 text-muted-foreground" />}
+                            : <MinusCircle className="h-4 w-4 text-muted-foreground" />}
                           <span>Signature</span>
                         </div>
                       </div>
