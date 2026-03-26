@@ -53,6 +53,10 @@ interface PdfFileValidationResult extends BaseFileOperationResult {
   isValid: boolean;
   /* Indicates if the PDF signature is valid */
   isSignatureValid: boolean;
+  /* Indicates if the PDF/A part is valid */
+  isPdfValid: boolean;
+  /* Indicates if the embedded XML invoice data is valid */
+  isXmlValid: boolean;
   /* XML validation report as string */
   validationReport: string;
 }
@@ -687,6 +691,36 @@ const Index = () => {
                       {/*</p>*/}
                     </div>
                   </div>
+
+                  {/* PDF sub-validation breakdown */}
+                  {operation === "validate-pdf" && (() => {
+                    const pdfResult = result as PdfFileValidationResult;
+                    return (
+                      <div className="flex flex-wrap gap-3 text-sm">
+                        <div className="flex items-center gap-1.5">
+                          {pdfResult.isXmlValid
+                            ? <CheckCircle className="h-4 w-4 text-success" />
+                            : <XCircle className="h-4 w-4 text-destructive" />}
+                          <span>XML invoice</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {pdfResult.isPdfValid
+                            ? <CheckCircle className="h-4 w-4 text-success" />
+                            : <AlertCircle className="h-4 w-4 text-warning" />}
+                          <span>PDF/A-3</span>
+                          {!pdfResult.isPdfValid && pdfResult.isValid && (
+                            <span className="text-xs text-muted-foreground">(warning only — valid under BR-FX-DE-03)</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {pdfResult.isSignatureValid
+                            ? <CheckCircle className="h-4 w-4 text-success" />
+                            : <AlertCircle className="h-4 w-4 text-muted-foreground" />}
+                          <span>Signature</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {((result as FileValidationResult | PdfFileValidationResult)?.validationReport !== undefined || (result as ExtractXmlFromPdfResult)?.xml !== undefined || (result as ConvertXmlToPdfResult)?.pdf) !== undefined && (
                     <div>
