@@ -94,17 +94,29 @@ public static class PdfEndpoints
             }
 
             string status = "unknown";
+            string pdfStatus = "unknown";
+            string xmlStatus = "unknown";
             try
             {
                 if (!string.IsNullOrWhiteSpace(mustangCliResult.StandardOutput))
                 {
                     var mustangCliXmlResult = XDocument.Parse(mustangCliResult.StandardOutput);
+                    XElement? root = mustangCliXmlResult.Root;
+
                     // Use direct child Elements() instead of Descendants() to target the top-level <summary status="..."/>
                     // which represents the overall validation result aggregating both <pdf> and <xml> sub-results.
                     // See: https://www.mustangproject.org/commandline/#validate
-                    XElement? summary = mustangCliXmlResult.Root?.Elements("summary").FirstOrDefault();
-                    if (summary?.Attribute("status") is { } attributeValue)
-                        status = attributeValue.Value;
+                    if (root?.Elements("summary").FirstOrDefault()?.Attribute("status") is { } overallStatus)
+                        status = overallStatus.Value;
+
+                    // Parse per-section statuses so callers can distinguish PDF/A warnings from XML errors.
+                    // Under ZuGFeRD rule BR-FX-DE-03, PDF/A failures are warnings (not fatal) for German invoices,
+                    // so the overall status may be "valid" even when the PDF section reports "invalid".
+                    if (root?.Element("pdf")?.Elements("summary").FirstOrDefault()?.Attribute("status") is { } ps)
+                        pdfStatus = ps.Value;
+
+                    if (root?.Element("xml")?.Elements("summary").FirstOrDefault()?.Attribute("status") is { } xs)
+                        xmlStatus = xs.Value;
                 }
             }
             catch (Exception ex)
@@ -117,14 +129,18 @@ public static class PdfEndpoints
             if (mustangCliResult.ExitCode == (int)ErrorCode.Success)
                 statusCode = StatusCodes.Status200OK;
 
-            return Results.Json(new PdfFileValidationResponse
+            var result = new PdfFileValidationResponse
             {
                 ErrorCode = (ErrorCode)mustangCliResult.ExitCode,
                 IsValid = status == "valid",
+                IsPdfValid = pdfStatus == "valid",
+                IsXmlValid = xmlStatus == "valid",
                 IsSignatureValid = mustangCliResult.StandardOutput.Contains("<signature>valid</signature>"),
                 ValidationReport = mustangCliResult.StandardOutput,
                 DiagnosticsErrorMessage = mustangCliResult.ExitCode != (int)ErrorCode.Success ? mustangCliResult.StandardError : null
-            }, statusCode: statusCode);
+            };
+
+            return Results.Json(result, statusCode: statusCode);
         }
         catch (Exception ex)
         {
