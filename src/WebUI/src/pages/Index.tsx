@@ -500,11 +500,11 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary">
+    <div className="min-h-screen bg-linear-to-b from-background to-secondary">
       {/* Header */}
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
+      <header className="border-b border-border bg-card/50 backdrop-blur-xs">
         <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
             Docentric e-Invoice Document Validator
           </h1>
           <p className="mt-2 text-muted-foreground">
@@ -563,7 +563,7 @@ const Index = () => {
         {/* Interactive Tester Section */}
         <section className="mb-12">
           <Card className="overflow-hidden border-2 border-primary/20 shadow-lg">
-            <div className="bg-gradient-to-r from-primary to-accent p-6">
+            <div className="bg-linear-to-r from-primary to-accent p-6">
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-primary-foreground">Test your ZuGFeRD, Factur-X or UBL
@@ -573,7 +573,7 @@ const Index = () => {
                   </p>
                 </div>
                 {simulationModeEnabled && (
-                  <div className="flex items-center gap-3 bg-background/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <div className="flex items-center gap-3 bg-background/10 backdrop-blur-xs rounded-lg px-4 py-2">
                     <Beaker className="h-4 w-4 text-primary-foreground" />
                     <Label htmlFor="simulation-mode"
                       className="text-sm font-medium text-primary-foreground cursor-pointer">
@@ -672,7 +672,7 @@ const Index = () => {
               <Button
                 onClick={handleOperation}
                 disabled={!file || isLoading}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity"
+                className="w-full bg-linear-to-r from-primary to-accent hover:opacity-90 transition-opacity"
                 size="lg"
               >
                 {isLoading ? "Processing..." : (
@@ -772,9 +772,9 @@ const Index = () => {
         {/* Sample Files Section */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold mb-6">Sample Files</h2>
-          <Card className="p-6 bg-card/50 backdrop-blur border-border/50">
+          <Card className="p-6 bg-card/50 backdrop-blur-sm border-border/50">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <FileText className="h-8 w-8 text-primary" />
               </div>
               <div className="flex-1">
@@ -800,7 +800,7 @@ const Index = () => {
           <h2 className="text-2xl font-bold">API Documentation</h2>
 
           <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-primary to-accent p-6">
+            <div className="bg-linear-to-r from-primary to-accent p-6">
               <h3 className="text-xl font-bold text-primary-foreground">Interactive API Documentation</h3>
               <p className="mt-2 text-primary-foreground/90">
                 Explore and test all API endpoints with our interactive documentation
@@ -864,7 +864,7 @@ const Index = () => {
           <h2 className="text-2xl font-bold">Licensing Information</h2>
 
           <Card className="overflow-hidden">
-            <div className="bg-gradient-to-r from-primary to-accent p-6">
+            <div className="bg-linear-to-r from-primary to-accent p-6">
               <h3 className="text-xl font-bold text-primary-foreground">Open Source Licenses</h3>
               <p className="mt-2 text-primary-foreground/90">
                 This project and its dependencies are licensed under open source licenses
@@ -986,7 +986,7 @@ const Index = () => {
       </section>
 
       {/* Footer */}
-      <footer className="mt-12 border-t border-border bg-card/50 backdrop-blur-sm">
+      <footer className="mt-12 border-t border-border bg-card/50 backdrop-blur-xs">
         <div className="container mx-auto px-4 py-6 text-center text-sm text-muted-foreground">
           <p>Docentric ZuGFeRD, Factur-X and UBL Document Validator</p>
         </div>
