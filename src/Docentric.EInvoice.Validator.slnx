@@ -3,6 +3,10 @@
   <Folder Name="/.github/workflows/">
     <File Path="../.github/workflows/build.yml" />
   </Folder>
+  <Folder Name="/Server.Tests/">
+    <Project Path="Server.Tests/RestServer.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Server/" />
   <Folder Name="/Solution Items/">
     <File Path="../.editorconfig" />
     <File Path="../.gitignore" />

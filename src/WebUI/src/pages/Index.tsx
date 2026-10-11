@@ -150,8 +150,10 @@ const Index = () => {
         diagnosticsErrorMessage: null,
         isValid: true,
         isSignatureValid: true,
+        isPdfValid: true,
+        isXmlValid: true,
         validationReport: `<?xml version="1.0" encoding="UTF-8"?>
-<validation filename="mock-invoice.pdf" datetime="2024-01-15 10:30:00">
+<validation filename="mock-invoice.pdf"
   <pdf>
     <info>
       <pdfAVersion>PDF/A-3</pdfAVersion>
@@ -717,7 +719,7 @@ const Index = () => {
                             : <AlertCircle className="h-4 w-4 text-warning" />}
                           <span>PDF/A-3</span>
                           {!pdfResult.isPdfValid && pdfResult.isValid && (
-                            <span className="text-xs text-muted-foreground">(warning only — valid under BR-FX-DE-03)</span>
+                            <span className="text-xs text-muted-foreground">(warning only - valid under BR-FX-DE-03)</span>
                           )}
                         </div>
                         <div className="flex items-center gap-1.5">
