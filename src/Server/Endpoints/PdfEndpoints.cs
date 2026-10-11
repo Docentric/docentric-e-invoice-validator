@@ -1,4 +1,4 @@
-using System.Xml.Linq;
+using System.Xml;
 
 using Docentric.EInvoice.Validator.RestServer.Configuration;
 using Docentric.EInvoice.Validator.RestServer.Contracts;
@@ -93,33 +93,12 @@ public static class PdfEndpoints
                 });
             }
 
-            string status = "unknown";
-            string pdfStatus = "unknown";
-            string xmlStatus = "unknown";
+            MustangValidationStatuses statuses = MustangValidationStatuses.Unknown;
             try
             {
-                if (!string.IsNullOrWhiteSpace(mustangCliResult.StandardOutput))
-                {
-                    var mustangCliXmlResult = XDocument.Parse(mustangCliResult.StandardOutput);
-                    XElement? root = mustangCliXmlResult.Root;
-
-                    // Use direct child Elements() instead of Descendants() to target the top-level <summary status="..."/>
-                    // which represents the overall validation result aggregating both <pdf> and <xml> sub-results.
-                    // See: https://www.mustangproject.org/commandline/#validate
-                    if (root?.Elements("summary").FirstOrDefault()?.Attribute("status") is { } overallStatus)
-                        status = overallStatus.Value;
-
-                    // Parse per-section statuses so callers can distinguish PDF/A warnings from XML errors.
-                    // Under ZuGFeRD rule BR-FX-DE-03, PDF/A failures are warnings (not fatal) for German invoices,
-                    // so the overall status may be "valid" even when the PDF section reports "invalid".
-                    if (root?.Element("pdf")?.Elements("summary").FirstOrDefault()?.Attribute("status") is { } ps)
-                        pdfStatus = ps.Value;
-
-                    if (root?.Element("xml")?.Elements("summary").FirstOrDefault()?.Attribute("status") is { } xs)
-                        xmlStatus = xs.Value;
-                }
+                statuses = MustangValidationReportParser.Parse(mustangCliResult.StandardOutput);
             }
-            catch (Exception ex)
+            catch (XmlException ex)
             {
                 /* keep status=unknown on parse issues */
                 logger.LogError(ex, "Failed to parse Mustang CLI XML output");
@@ -132,9 +111,9 @@ public static class PdfEndpoints
             var result = new PdfFileValidationResponse
             {
                 ErrorCode = (ErrorCode)mustangCliResult.ExitCode,
-                IsValid = status == "valid",
-                IsPdfValid = pdfStatus == "valid",
-                IsXmlValid = xmlStatus == "valid",
+                IsValid = statuses.Overall == "valid",
+                IsPdfValid = statuses.Pdf == "valid",
+                IsXmlValid = statuses.Xml == "valid",
                 IsSignatureValid = mustangCliResult.StandardOutput.Contains("<signature>valid</signature>"),
                 ValidationReport = mustangCliResult.StandardOutput,
                 DiagnosticsErrorMessage = mustangCliResult.ExitCode != (int)ErrorCode.Success ? mustangCliResult.StandardError : null
