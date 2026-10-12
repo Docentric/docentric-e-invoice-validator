@@ -20,7 +20,7 @@ RUN npm run build
 
 # Stage 2: Build the .NET application - use latest Noble variant - Better security
 # Build on the target platform so publish output matches the runtime image architecture
-FROM --platform=$TARGETPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
 WORKDIR /src
 
 # Copy Directory.Build.props file

@@ -21,7 +21,7 @@ env:
 jobs:
   build:
     name: Build Solution
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       is_release: ${{ steps.is_release.outputs.value }}
       is_stable: ${{ steps.is_release.outputs.is_stable }}
@@ -29,9 +29,9 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
-    # Determine if this is a release build (v* tag)
+    # Determine
     # Sets artifact retention: 90 days for releases, 7 days for dev builds
     - name: Check if release tag
       id: is_release
@@ -98,10 +98,14 @@ jobs:
     - name: Publish artifacts
       run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --output ./publish/rest-server
 
-    # Publish self-contained version with embedded runtime for linux-x64 (only for release builds)
-    - name: Publish self-contained artifacts
+    # Publish self-contained versions with embedded runtime for linux-x64 and linux-arm64 (only for release builds)
+    - name: Publish self-contained artifacts (linux-x64)
       if: steps.is_release.outputs.value == 'true'
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --output ./publish/rest-server-self-contained
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-self-contained-x64
+
+    - name: Publish self-contained artifacts (linux-arm64)
+      if: steps.is_release.outputs.value == 'true'
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-arm64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-self-contained-arm64
 
     # Upload artifacts with retention based on branch
     - name: Upload build artifacts
@@ -112,12 +116,20 @@ jobs:
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Self-contained build only uploaded for release builds
-    - name: Upload self-contained build artifacts
+    - name: Upload self-contained build artifacts (linux-x64)
       if: steps.is_release.outputs.value == 'true'
       uses: actions/upload-artifact@v4
       with:
-        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-${{ steps.is_release.outputs.version }}
-        path: ./publish/rest-server-self-contained
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-x64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload self-contained build artifacts (linux-arm64)
+      if: steps.is_release.outputs.value == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-arm64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Upload source code (only for release builds)
@@ -144,7 +156,8 @@ jobs:
       run: |
         cd publish
         zip -r Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}.zip rest-server
-        zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained
+        zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-x64
+        zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-arm64
 
     # Create GitHub Release with ZIP artifacts (only for stable releases)
     - name: Create GitHub Release
@@ -153,30 +166,31 @@ jobs:
       with:
         files: |
           publish/Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}.zip
-          publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-${{ steps.is_release.outputs.version }}.zip
+          publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip
+          publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip
         generate_release_notes: true
 
   docker:
     name: Build & Push Docker Image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
 
     # QEMU is required to build the linux/arm64 runtime stage on an amd64 runner
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
+      uses: docker/setup-qemu-action@v4
 
     # Setup Docker with buildx for advanced build features
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      docker/setup-buildx-action@v4
 
     # Login only for release builds (avoids unnecessary auth for dev builds)
     - name: Log in to Docker Hub
       if: needs.build.outputs.is_release == 'true'
-      uses: docker/login-action@v3
+      docker/login-action@v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -184,7 +198,7 @@ jobs:
     # Generate Docker tags for release builds (v* tags)
     - name: Extract metadata
       id: meta
-      uses: docker/metadata-action@v5
+      docker/metadata-action@v6
       with:
         images: ${{ env.DOCKER_IMAGE }}
         tags: |
@@ -192,10 +206,12 @@ jobs:
           type=semver,pattern={{version}}
           # Tag "latest" only for stable releases (no prerelease suffix)
           type=raw,value=latest,enable=${{ needs.build.outputs.is_stable == 'true' }}
+          # Fallback tag so non-release builds still produce a tag and version
+          type=sha
 
     # Build and push multi-arch Docker image only for v* tags
     - name: Build and push Docker image
-      uses: docker/build-push-action@v6
+      docker/build-push-action@v7
       with:
         context: ./src
         file: ./src/Dockerfile
