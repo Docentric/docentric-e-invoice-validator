@@ -165,6 +165,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # QEMU is required to build the linux/arm64 runtime stage on an amd64 runner
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
     # Setup Docker with buildx for advanced build features
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -189,12 +193,13 @@ jobs:
           # Tag "latest" only for stable releases (no prerelease suffix)
           type=raw,value=latest,enable=${{ needs.build.outputs.is_stable == 'true' }}
 
-    # Build and push Docker image only for v* tags
+    # Build and push multi-arch Docker image only for v* tags
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
       with:
         context: ./src
         file: ./src/Dockerfile
+        platforms: linux/amd64,linux/arm64
         push: ${{ needs.build.outputs.is_release == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
