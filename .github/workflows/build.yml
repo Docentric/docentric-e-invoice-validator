@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write  # Required for creating GitHub releases
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 env:
   DOTNET_VERSION: '10.0.x'
   NODE_VERSION: '20.x'
@@ -21,6 +25,7 @@ jobs:
   build:
     name: Build Solution
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     outputs:
       is_release: ${{ steps.is_release.outputs.value }}
       is_stable: ${{ steps.is_release.outputs.is_stable }}
@@ -28,10 +33,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
     # Determine if this is a release build (v* tag)
-    # Sets artifact retention: 90 days for releases, 7 days for dev builds
+    # Sets artifact retention: 90 days for stable releases, 7 days for pre-releases and dev builds
     - name: Check if release tag
       id: is_release
       env:
@@ -47,6 +52,11 @@ jobs:
           IS_RELEASE=true
           TAG_NAME="$REF_NAME"
           VERSION="${TAG_NAME#v}"  # Remove 'v' prefix
+
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Tag '$TAG_NAME' is not a valid SemVer version (expected vMAJOR.MINOR.PATCH[-prerelease])"
+            exit 1
+          fi
           echo "Release build triggered by tag $TAG_NAME"
 
           # Check if this is a stable release (no prerelease suffix like -preview, -beta, -rc)
@@ -58,24 +68,24 @@ jobs:
           fi
         fi
 
-        echo "value=$IS_RELEASE" >> $GITHUB_OUTPUT
-        echo "is_stable=$IS_STABLE_RELEASE" >> $GITHUB_OUTPUT
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "value=$IS_RELEASE" >> "$GITHUB_OUTPUT"
+        echo "is_stable=$IS_STABLE_RELEASE" >> "$GITHUB_OUTPUT"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
         if [[ "$IS_STABLE_RELEASE" == "true" ]]; then
-          echo "artifact_retention_days=90" >> $GITHUB_OUTPUT
+          echo "artifact_retention_days=90" >> "$GITHUB_OUTPUT"
         else
-          echo "artifact_retention_days=7" >> $GITHUB_OUTPUT
+          echo "artifact_retention_days=7" >> "$GITHUB_OUTPUT"
         fi
 
     # Setup build environment
     - name: Setup .NET
-      uses: actions/setup-dotnet@v6
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Setup Node.js
-      uses: actions/setup-node@v7
+      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -99,7 +109,7 @@ jobs:
     # Publish test results and code coverage
     - name: Generate coverage report
       if: always()
-      uses: danielpalme/ReportGenerator-GitHub-Action@5
+      uses: danielpalme/ReportGenerator-GitHub-Action@d3ebf1f760f7d8ab92cc44d9bcfee7ad73722a31 # v5
       with:
         reports: test-results/**/coverage.cobertura.xml
         targetdir: coverage-report
@@ -109,12 +119,12 @@ jobs:
       if: always()
       run: |
         if [ -f coverage-report/SummaryGithub.md ]; then
-          cat coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+          cat coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
         fi
 
     - name: Upload test results and coverage
       if: always()
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
         name: Test-Results-And-Coverage-${{ steps.is_release.outputs.version }}
         path: |
@@ -139,16 +149,16 @@ jobs:
       if: steps.is_release.outputs.value == 'true'
       run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-arm64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-self-contained-arm64
 
-    # Upload artifacts with retention based on branch
+    # Upload artifacts (retention depends on release type, see is_release step)
     - name: Upload build artifacts (linux-x64)
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server-x64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     - name: Upload build artifacts (linux-arm64)
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server-arm64
@@ -157,7 +167,7 @@ jobs:
     # Self-contained build only uploaded for release builds
     - name: Upload self-contained build artifacts (linux-x64)
       if: steps.is_release.outputs.value == 'true'
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server-self-contained-x64
@@ -165,7 +175,7 @@ jobs:
 
     - name: Upload self-contained build artifacts (linux-arm64)
       if: steps.is_release.outputs.value == 'true'
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server-self-contained-arm64
@@ -174,7 +184,7 @@ jobs:
     # Upload source code (only for release builds)
     - name: Upload source code
       if: steps.is_release.outputs.value == 'true'
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
         name: Source-${{ steps.is_release.outputs.version }}
         # Includes everything except build and publish folders
@@ -191,9 +201,9 @@ jobs:
         include-hidden-files: true # needed for the hidden files and folders (starting with ., like .github, .gitignore, etc.)
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
-    # Create ZIP archives for stable release builds only
+    # Create ZIP archives for release builds
     - name: Create ZIP archives
-      if: steps.is_release.outputs.is_stable == 'true'
+      if: steps.is_release.outputs.value == 'true'
       run: |
         cd publish
         zip -r Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}.zip rest-server-x64
@@ -201,10 +211,10 @@ jobs:
         zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-x64
         zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-arm64
 
-    # Create GitHub Release with ZIP artifacts (only for stable releases)
+    # Create GitHub Release with ZIP artifacts (pre-releases are marked as such)
     - name: Create GitHub Release
-      if: steps.is_release.outputs.is_stable == 'true'
-      uses: softprops/action-gh-release@v3
+      if: steps.is_release.outputs.value == 'true'
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
       with:
         files: |
           publish/Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}.zip
@@ -212,28 +222,31 @@ jobs:
           publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip
           publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip
         generate_release_notes: true
+        prerelease: ${{ steps.is_release.outputs.is_stable != 'true' }}
 
   docker:
     name: Build & Push Docker Image
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     needs: build
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-    # QEMU is required to build the linux/arm64 runtime stage on an amd64 runner
+    # QEMU is required to build the linux/arm64 runtime stage on an amd64 runner (release builds only)
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v4
+      if: needs.build.outputs.is_release == 'true'
+      uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4
 
     # Setup Docker with buildx for advanced build features
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v4
+      uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4
 
     # Login only for release builds (avoids unnecessary auth for dev builds)
     - name: Log in to Docker Hub
       if: needs.build.outputs.is_release == 'true'
-      uses: docker/login-action@v4
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -241,7 +254,7 @@ jobs:
     # Generate Docker tags for release builds (v* tags)
     - name: Extract metadata
       id: meta
-      uses: docker/metadata-action@v6
+      uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
       with:
         images: ${{ env.DOCKER_IMAGE }}
         tags: |
@@ -252,13 +265,13 @@ jobs:
           # Fallback tag so non-release builds still produce a tag and version
           type=sha
 
-    # Build and push multi-arch Docker image only for v* tags
+    # Build the image on every run; multi-arch and push only for v* tags
     - name: Build and push Docker image
-      uses: docker/build-push-action@v7
+      uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
       with:
         context: ./src
         file: ./src/Dockerfile
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ needs.build.outputs.is_release == 'true' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
         push: ${{ needs.build.outputs.is_release == 'true' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
