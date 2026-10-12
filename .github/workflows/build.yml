@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write  # Required for creating GitHub releases
-  packages: write  # Required for uploading artifacts
 
 env:
   DOTNET_VERSION: '10.0.x'
@@ -31,18 +30,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v7
 
-# Determine if this is a release build (v* tag)
+    # Determine if this is a release build (v* tag)
     # Sets artifact retention: 90 days for releases, 7 days for dev builds
     - name: Check if release tag
       id: is_release
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        REF: ${{ github.ref }}
+        REF_NAME: ${{ github.ref_name }}
       run: |
         IS_RELEASE=false
         IS_STABLE_RELEASE=false
         VERSION="0.0.0"  # Default version for non-release builds
 
-        if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == refs/tags/v* ]]; then
+        if [[ "$EVENT_NAME" == "push" && "$REF" == refs/tags/v* ]]; then
           IS_RELEASE=true
-          TAG_NAME="${{ github.ref_name }}"
+          TAG_NAME="$REF_NAME"
           VERSION="${TAG_NAME#v}"  # Remove 'v' prefix
           echo "Release build triggered by tag $TAG_NAME"
 
@@ -92,7 +95,6 @@ jobs:
 
     - name: Run tests
       run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --results-directory ./test-results
-      continue-on-error: true
 
     # Publish test results and code coverage
     - name: Generate coverage report
@@ -121,9 +123,12 @@ jobs:
           coverage-report/
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
-    # Publish framework-dependent version (requires .NET runtime on target)
-    - name: Publish artifacts
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --no-build --output ./publish/rest-server
+    # Publish framework-dependent version (requires .NET runtime on target for x64 and arm64)
+    - name: Publish artifacts (x64)
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --runtime linux-x64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-x64
+
+    - name: Publish artifacts (arm64)
+      run: dotnet publish src/Server/RestServer.csproj --configuration Release --runtime linux-arm64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-arm64
 
     # Publish self-contained versions with embedded runtime for linux-x64 and linux-arm64 (only for release builds)
     - name: Publish self-contained artifacts (linux-x64)
@@ -135,11 +140,18 @@ jobs:
       run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-arm64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-self-contained-arm64
 
     # Upload artifacts with retention based on branch
-    - name: Upload build artifacts
+    - name: Upload build artifacts (linux-x64)
       uses: actions/upload-artifact@v7
       with:
-        name: Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}
-        path: ./publish/rest-server
+        name: Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-x64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload build artifacts (linux-arm64)
+      uses: actions/upload-artifact@v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-arm64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Self-contained build only uploaded for release builds
@@ -174,6 +186,8 @@ jobs:
           !**/.vs/
           !.git/
           !publish/
+          !test-results/
+          !coverage-report/
         include-hidden-files: true # needed for the hidden files and folders (starting with ., like .github, .gitignore, etc.)
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
@@ -182,7 +196,8 @@ jobs:
       if: steps.is_release.outputs.is_stable == 'true'
       run: |
         cd publish
-        zip -r Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}.zip rest-server
+        zip -r Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}.zip rest-server-x64
+        zip -r Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}.zip rest-server-arm64
         zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-x64
         zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-arm64
 
@@ -192,7 +207,8 @@ jobs:
       uses: softprops/action-gh-release@v3
       with:
         files: |
-          publish/Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}.zip
+          publish/Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}.zip
+          publish/Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}.zip
           publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip
           publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip
         generate_release_notes: true
