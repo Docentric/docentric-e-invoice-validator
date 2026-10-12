@@ -29,7 +29,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     # Determine
     # Sets artifact retention: 90 days for releases, 7 days for dev builds
@@ -67,12 +67,12 @@ jobs:
 
     # Setup build environment
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Setup Node.js
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
@@ -91,8 +91,35 @@ jobs:
       run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore /p:Version=${{ steps.is_release.outputs.version }} /p:TreatWarningsAsErrors=true
 
     - name: Run tests
-      run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal
+      run: dotnet test ${{ env.SOLUTION_PATH }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --results-directory ./test-results
       continue-on-error: true
+
+    # Publish test results and code coverage
+    - name: Generate coverage report
+      if: always()
+      uses: danielpalme/ReportGenerator-GitHub-Action@5
+      with:
+        reports: test-results/**/coverage.cobertura.xml
+        targetdir: coverage-report
+        reporttypes: Html;MarkdownSummaryGithub
+
+    - name: Add coverage to job summary
+      if: always()
+      run: |
+        if [ -f coverage-report/SummaryGithub.md ]; then
+          cat coverage-report/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Upload test results and coverage
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: Test-Results-And-Coverage-${{ steps.is_release.outputs.version }}
+        path: |
+          test-results/**/*.trx
+          test-results/**/coverage.cobertura.xml
+          coverage-report/
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Publish framework-dependent version (requires .NET runtime on target)
     - name: Publish artifacts
@@ -109,7 +136,7 @@ jobs:
 
     # Upload artifacts with retention based on branch
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server
@@ -118,7 +145,7 @@ jobs:
     # Self-contained build only uploaded for release builds
     - name: Upload self-contained build artifacts (linux-x64)
       if: steps.is_release.outputs.value == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server-self-contained-x64
@@ -126,7 +153,7 @@ jobs:
 
     - name: Upload self-contained build artifacts (linux-arm64)
       if: steps.is_release.outputs.value == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}
         path: ./publish/rest-server-self-contained-arm64
@@ -135,7 +162,7 @@ jobs:
     # Upload source code (only for release builds)
     - name: Upload source code
       if: steps.is_release.outputs.value == 'true'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: Source-${{ steps.is_release.outputs.version }}
         # Includes everything except build and publish folders
@@ -162,7 +189,7 @@ jobs:
     # Create GitHub Release with ZIP artifacts (only for stable releases)
     - name: Create GitHub Release
       if: steps.is_release.outputs.is_stable == 'true'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v3
       with:
         files: |
           publish/Docentric.EInvoice.Validator.RestServer-${{ steps.is_release.outputs.version }}.zip
@@ -177,7 +204,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     # QEMU is required to build the linux/arm64 runtime stage on an amd64 runner
     - name: Set up QEMU
