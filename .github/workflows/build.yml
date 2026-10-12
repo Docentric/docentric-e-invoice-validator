@@ -31,7 +31,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v7
 
-    # Determine
+# Determine if this is a release build (v* tag)
     # Sets artifact retention: 90 days for releases, 7 days for dev builds
     - name: Check if release tag
       id: is_release
