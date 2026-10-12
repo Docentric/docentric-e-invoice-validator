@@ -19,8 +19,8 @@ COPY WebUI/ ./
 RUN npm run build
 
 # Stage 2: Build the .NET application - use latest Noble variant - Better security
-# Runs on the build platform; the published output is architecture-independent (UseAppHost=false)
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
+# Build on the target platform so publish output matches the runtime image architecture
+FROM --platform=$TARGETPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
 WORKDIR /src
 
 # Copy Directory.Build.props file
