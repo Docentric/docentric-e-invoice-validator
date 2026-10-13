@@ -16,8 +16,9 @@ This project provides a simple, user-friendly interface for validating ZuGFeRD a
 
 - **Web UI**: Modern React-based interface for uploading and validating invoices
 - **REST API**: Programmatic access for automated testing and integration
-- **Multiple Formats**: Supports both PDF (hybrid) and XML e-invoice formats
-- **Standards Compliance**: Validates ZuGFeRD and Factur-X invoices using Mustang Project
+- **Multiple Formats**: Supports PDF (hybrid) and XML (Factur-X, UBL) e-invoice formats
+- **Extraction and Conversion**: Extracts embedded XML from PDF and converts XML to PDF
+- **Standards Compliance**: Validates ZuGFeRD, Factur-X and UBL invoices using Mustang Project CLI 2.26.0
 - **Docker Ready**: Pre-built Docker images available on Docker Hub
 - **CI/CD**: Automated builds and testing with GitHub Actions
 
@@ -26,8 +27,8 @@ This project provides a simple, user-friendly interface for validating ZuGFeRD a
 - **Backend**: ASP.NET Core 10 (minimal API)
 - **Frontend**: React + Vite + TypeScript
 - **UI Components**: shadcn/ui with Tailwind CSS
-- **Validation Engine**: Mustang Project CLI (Java-based)
-- **Runtime**: .NET 10 + OpenJDK
+- **Validation Engine**: Mustang Project CLI 2.26.0 (Java-based)
+- **Runtime**: .NET 10 + OpenJDK 17
 
 ## Quick Start
 
@@ -80,7 +81,7 @@ For local development, you need:
    dotnet run --project src/Server/RestServer.csproj
    ```
 
-The application will be available at `https://localhost:57456` or `http://localhost:53365`.
+The application will be available at `https://localhost:57456` or `http://localhost:57457`.
 
 **Note**: When running locally (not via Docker), ensure you have Java Runtime Environment (JRE) 11 or later installed, as it's required for the Mustang Project validation engine.
 
@@ -111,7 +112,17 @@ For detailed API documentation and interactive testing, visit the Swagger UI at:
 http://localhost:18889/api/docs/swagger/index.html
 ```
 
-The API provides endpoints for validating ZuGFeRD and Factur-X e-invoices in both PDF and XML formats.
+The API provides the following endpoints (all `POST` endpoints accept `multipart/form-data` with a single file, up to 100 MB, and time out after 300 seconds):
+
+| Endpoint | Description |
+|----------|-------------|
+| `POST /api/pdf/validate-zugferd` | Validates a ZuGFeRD / Factur-X PDF |
+| `POST /api/pdf/extract-zugferd-xml` | Extracts the embedded XML from a ZuGFeRD / Factur-X PDF |
+| `POST /api/xml/validate` | Validates a Factur-X or UBL XML file |
+| `POST /api/xml/convert-to-pdf` | Converts a Factur-X or UBL XML file to PDF |
+| `GET /api/health` | Reports Java and Mustang CLI availability and versions |
+
+Error responses carry an `ErrorCode`; see [ErrorCode.Examples.md](src/Server/Contracts/ErrorCode.Examples.md). ReDoc is also available at `/api/docs/redoc`.
 
 ## Architecture
 
@@ -134,8 +145,8 @@ React SPA that:
 ### Docker Image
 The Docker image bundles:
 - .NET 10 runtime
-- OpenJDK (for Mustang CLI)
-- Mustang-CLI.jar in `/opt/Mustang-CLI.jar`
+- OpenJDK 17 headless (for Mustang CLI)
+- `Mustang-CLI-2.26.0.jar`, published next to the application in `/app`
 - Published ASP.NET Core application
 - Built React SPA
 
@@ -144,6 +155,8 @@ The Docker image bundles:
 ```text
 docentric-e-invoice-validator/
 ├── .github/
+│   ├── copilot-instructions.md
+│   ├── prompts/                # Reusable Copilot Chat prompts
 │   └── workflows/
 │       └── build.yml           # GitHub Actions CI/CD pipeline
 ├── samples/                    # Sample e-invoice files for testing
@@ -159,8 +172,13 @@ docentric-e-invoice-validator/
 │   ├── Server/                 # ASP.NET Core REST API
 │   │   ├── RestServer.csproj
 │   │   ├── Program.cs
-│   │   ├── ApiHandlers.cs
-│   │   └── Models/
+│   │   ├── Mustang-CLI-2.26.0.jar
+│   │   ├── Configuration/
+│   │   ├── Contracts/
+│   │   ├── Endpoints/
+│   │   ├── IO/
+│   │   └── Services/
+│   ├── Server.Tests/           # xUnit v3 tests
 │   └── WebUI/                  # React + Vite frontend
 │       ├── package.json
 │       ├── vite.config.ts
@@ -198,7 +216,15 @@ docker pull docentric/e-invoice-validator:latest
    dotnet run
    ```
 
-The frontend dev server runs on `http://localhost:53365` with hot reload enabled.
+   The backend listens on `https://localhost:57456` and `http://localhost:57457`.
+
+2. **Start the frontend** (optional, hot reload):
+   ```bash
+   cd src/WebUI
+   npm run dev
+   ```
+
+   The frontend dev server runs on `http://localhost:53365` with hot reload enabled.
 
 ### Running Tests
 

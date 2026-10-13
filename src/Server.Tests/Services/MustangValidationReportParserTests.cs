@@ -25,7 +25,7 @@ public class MustangValidationReportParserTests
     {
         MustangValidationStatuses result = MustangValidationReportParser.Parse(Report(overall, pdf, xml));
 
-        Assert.Equal(new MustangValidationStatuses(overall, pdf, xml), result);
+        Assert.Equal(new MustangValidationStatuses(overall, pdf, xml, "unknown"), result);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class MustangValidationReportParserTests
         // BR-FX-DE-03: PDF/A errors are warnings for German invoices.
         MustangValidationStatuses result = MustangValidationReportParser.Parse(Report("valid", "invalid", "valid"));
 
-        Assert.Equal(new MustangValidationStatuses("valid", "invalid", "valid"), result);
+        Assert.Equal(new MustangValidationStatuses("valid", "invalid", "valid", "unknown"), result);
     }
 
     [Fact]
@@ -72,6 +72,40 @@ public class MustangValidationReportParserTests
         MustangValidationStatuses result = MustangValidationReportParser.Parse(report);
 
         Assert.Equal(MustangValidationStatuses.Unknown, result);
+    }
+
+    [Theory]
+    [InlineData("valid")]
+    [InlineData("invalid")]
+    public void WhenSignatureElementPresentThenSignatureStatusIsReturned(string signature)
+    {
+        MustangValidationStatuses result = MustangValidationReportParser.Parse(Report("valid", "valid", "valid", $"<signature>{signature}</signature>"));
+
+        Assert.Equal(signature, result.Signature);
+    }
+
+    [Fact]
+    public void WhenSignatureElementHasSurroundingWhitespaceThenItIsTrimmed()
+    {
+        MustangValidationStatuses result = MustangValidationReportParser.Parse(Report("valid", "valid", "valid", "<signature> valid </signature>"));
+
+        Assert.Equal("valid", result.Signature);
+    }
+
+    [Fact]
+    public void WhenSignatureElementMissingThenSignatureStatusIsUnknown()
+    {
+        MustangValidationStatuses result = MustangValidationReportParser.Parse(Report("valid", "valid", "valid"));
+
+        Assert.Equal("unknown", result.Signature);
+    }
+
+    [Fact]
+    public void WhenSignatureElementEmptyThenSignatureStatusIsUnknown()
+    {
+        MustangValidationStatuses result = MustangValidationReportParser.Parse(Report("valid", "valid", "valid", "<signature/>"));
+
+        Assert.Equal("unknown", result.Signature);
     }
 
     [Fact]

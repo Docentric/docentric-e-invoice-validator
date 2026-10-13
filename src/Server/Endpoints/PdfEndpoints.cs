@@ -114,7 +114,7 @@ public static class PdfEndpoints
                 IsValid = statuses.Overall == "valid",
                 IsPdfValid = statuses.Pdf == "valid",
                 IsXmlValid = statuses.Xml == "valid",
-                IsSignatureValid = mustangCliResult.StandardOutput.Contains("<signature>valid</signature>"),
+                IsSignatureValid = statuses.Signature == "valid",
                 ValidationReport = mustangCliResult.StandardOutput,
                 DiagnosticsErrorMessage = mustangCliResult.ExitCode != (int)ErrorCode.Success ? mustangCliResult.StandardError : null
             };
