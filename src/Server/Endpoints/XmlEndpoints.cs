@@ -63,7 +63,6 @@ public static class XmlEndpoints
     /// </remarks>
     private static async Task<IResult> ValidateXmlHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
     {
-        Thread.Sleep(TimeSpan.FromSeconds(10));
         ILogger logger = loggerFactory.CreateLogger(nameof(XmlEndpoints));
         if (!request.HasFormContentType)
             return Results.BadRequest(new FileValidationResponse
@@ -97,13 +96,7 @@ public static class XmlEndpoints
             string status = "unknown";
             try
             {
-                if (!string.IsNullOrWhiteSpace(mustangCliResult.StandardOutput))
-                {
-                    var mustangCliXmlResult = XDocument.Parse(mustangCliResult.StandardOutput);
-                    XElement? summary = mustangCliXmlResult.Root?.Descendants("summary").FirstOrDefault();
-                    if (summary?.Attribute("status") is { } attributeValue)
-                        status = attributeValue.Value;
-                }
+                status = MustangValidationReportParser.Parse(mustangCliResult.StandardOutput).Overall;
             }
             catch(Exception ex)
             {
