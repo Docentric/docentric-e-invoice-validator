@@ -73,6 +73,6 @@ public static class HealthEndpoints
     {
         bool isAvailable = await mustangCliService.CheckAvailabilityAsync(cancellationToken);
 
-        return (isAvailable, isAvailable ? MustangCliService.MustangCliVersion : null);
+        return (isAvailable, isAvailable ? mustangCliService.GetMustangCliVersion() : null);
     }
 }

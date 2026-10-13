@@ -10,13 +10,7 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <param name="logger">The logger instance for logging information and errors.</param>
 public sealed class MustangCliService(ILogger<MustangCliService> logger)
 {
-    /// <summary>
-    /// The version of Mustang CLI being used.
-    /// </summary>
-    public const string MustangCliVersion = "2.26.0";
-    private const string MustangJarFile = $"Mustang-CLI-{MustangCliVersion}.jar";
-    private const string JavaMaxMemory = "-Xmx1G";
-    private const string FileEncoding = "-Dfile.encoding=UTF-8";
+    private const string JavaMaxMemory = "-Xmx1G";    private const string FileEncoding = "-Dfile.encoding=UTF-8";
 
     /// <summary>
     /// Validates a ZuGFeRD/Factur-X PDF file.
@@ -49,6 +43,13 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
 
 
     /// <summary>
+    /// Gets the version of the Mustang CLI jar file deployed next to the application.
+    /// </summary>
+    /// <returns>The version read from the jar file name, or <see langword="null"/> when the jar file is not found.</returns>
+    public string? GetMustangCliVersion()
+        => MustangJarLocator.ReadVersion(AppContext.BaseDirectory);
+
+    /// <summary>
     /// Checks if Mustang CLI is available by executing the help command.
     /// </summary>
     /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
@@ -75,10 +76,17 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// <returns>A <see cref="MustangCliResult"/> containing the exit code, stdout, and stderr.</returns>
     private async Task<MustangCliResult> ExecuteAsync(string action, string[] additionalArguments, CancellationToken cancellationToken)
     {
+        string? mustangJarFile = MustangJarLocator.FindJarFileName(AppContext.BaseDirectory);
+
+        if (mustangJarFile is null)
+        {
+            return MustangCliResult.Failed($"Mustang CLI jar file was not found (action: {action}).");
+        }
+
         ProcessStartInfo processStartInfo = new()
         {
             FileName = "java",
-            ArgumentList = { JavaMaxMemory, FileEncoding, "-jar", MustangJarFile },
+            ArgumentList = { JavaMaxMemory, FileEncoding, "-jar", mustangJarFile },
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
