@@ -195,6 +195,42 @@ npm audit fix
 - Dependency upgrade commits use the standard format, e.g. `#<issue> Upgrade <package> to <version> (fixes <advisory>)`; mention the advisory (GHSA/CVE) in the PR description under **Breaking changes / notes**.
 - Treat Dependabot, code scanning and secret scanning alerts as blocking for release.
 
+## Code Review
+
+Applies to human and Copilot reviews. Review the diff against this file; comment only on actionable findings, ordered by severity (security/correctness > contracts > tests > style).
+
+Checklist:
+- **Scope:** one issue per PR, no unrelated refactoring, branch/commit/PR title follow the conventions above.
+- **Correctness:** null/empty input, cancellation (`CancellationToken` passed through), error paths return a defined `ErrorCode`, no sync-over-async.
+- **Contracts:** no breaking change to REST contracts or `ErrorCode` values unless requested; Swagger metadata, `ErrorCode.Examples.md` and README updated when behavior changes.
+- **Security:** uploads validated (type, size, path traversal), temp files always deleted, no shell string concatenation for Java/Mustang, no secrets or file contents in logs, no stack traces or internal paths in responses.
+- **Style:** `.editorconfig`, naming, least-exposure access modifiers, XML docs on every public member, TSDoc on exported frontend symbols.
+- **Tests:** new/changed behavior has deterministic tests including edge cases and regressions; no loops/conditionals in tests.
+- **Dependencies:** new packages justified; `package-lock.json` committed with `package.json`; no suppressed audit warnings.
+- **Pipeline:** workflow changes keep SHA-pinned actions, least-privilege permissions and `env:`-passed untrusted values.
+- **Generated files:** no manual edits to `wwwroot/assets/*`, `*.g.cs` or the Mustang JAR (outside a dedicated upgrade).
+
+Review etiquette:
+- Prefix non-blocking remarks with `nit:`; explain the *why* and suggest a concrete fix.
+- Do not approve while CI is failing or blocking comments are unresolved.
+- Authors address feedback with follow-up commits and resolve threads once fixed.
+
+## Reusable Prompts
+
+Common prompts live in `.github/prompts/*.prompt.md` and are invoked in Copilot Chat with `/<name>`:
+
+| Prompt | Purpose |
+|--------|---------|
+| `/create-branch-and-pr` | Read issue via MCP, create branch, open PR following conventions |
+| `/commit-message` | Generate a commit message for the staged changes |
+| `/review-pull-request` | Review a PR using the Code Review checklist |
+| `/add-tests` | Write xUnit v3 tests for selected code |
+| `/document-public-members` | Add missing XML docs / TSDoc |
+| `/security-check` | Run NuGet/npm audits and fix findings |
+| `/upgrade-dependency` | Upgrade a package or Mustang CLI as a dedicated change |
+
+Keep prompts short, reference this file instead of repeating its rules, and update them when conventions change.
+
 ## Security and Performance
 
 - Enforce file type and size limits on uploads; protect against path traversal and zip/PDF bombs.

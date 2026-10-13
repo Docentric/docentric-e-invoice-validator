@@ -1,0 +1,9 @@
+---
+description: Add missing XML documentation (C#) or TSDoc (TypeScript) to public members
+---
+Find public types and members in the selected file(s) that lack documentation and add it.
+
+- C#: `<summary>`, plus `<param>`, `<returns>`, `<exception>`, `<typeparam>` where applicable; `<inheritdoc />` for overrides and interface implementations; document record parameters, enum values and constants.
+- TypeScript: TSDoc on exported functions, hooks and components.
+- Explain *why* and behavior, not what the name already says.
+- Do not change code behavior.
