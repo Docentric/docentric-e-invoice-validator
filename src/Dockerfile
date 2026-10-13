@@ -1,5 +1,5 @@
 # Stage 1: Build the React SPA
-FROM node:20-alpine AS spa-build
+FROM --platform=$BUILDPLATFORM node:20-alpine AS spa-build
 WORKDIR /src/WebUI
 
 # Update Alpine packages to latest security patches
@@ -19,6 +19,7 @@ COPY WebUI/ ./
 RUN npm run build
 
 # Stage 2: Build the .NET application - use latest Noble variant - Better security
+# Build on the target platform so publish output matches the runtime image architecture
 FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-build
 WORKDIR /src
 
@@ -77,10 +78,6 @@ LABEL org.opencontainers.image.title="Docentric e-Invoice Validator" \
       org.opencontainers.image.source="https://github.com/docentric/docentric-e-invoice-validator" \
       org.opencontainers.image.licenses="MIT" \
       maintainer="klemen.novak@docentric.com"
-
-# Set Java environment variables
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-ENV PATH="$JAVA_HOME/bin:$PATH"
 
 # Create non-root user
 RUN groupadd -r zugferdappuser --gid=1001 && \
