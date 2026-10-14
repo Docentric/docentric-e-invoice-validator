@@ -221,7 +221,11 @@ Common prompts live in `.github/prompts/*.prompt.md` and are invoked in Copilot 
 
 | Prompt | Purpose |
 |--------|---------|
-| `/create-branch-and-pr` | Read issue via MCP, create branch, open PR following conventions |
+| `/create-branch-implement-and-pr` | Read issue via MCP, create branch, implement, review, confirm with user, open PR |
+| `/create-branch` | Read issue via MCP and create the branch |
+| `/implement` | Implement the issue on the current branch |
+| `/review-implementation` | Review local changes before opening a PR |
+| `/create-pull-request` | Commit, push and open the PR |
 | `/commit-message` | Generate a commit message for the staged changes |
 | `/review-pull-request` | Review a PR using the Code Review checklist |
 | `/add-tests` | Write xUnit v3 tests for selected code |
