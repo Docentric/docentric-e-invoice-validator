@@ -456,3 +456,6 @@ dist-ssr
 
 # Rider
 .idea
+
+# Claude Code personal settings
+.claude/settings.local.json
