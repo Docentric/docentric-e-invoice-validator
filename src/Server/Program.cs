@@ -56,7 +56,10 @@ app.Lifetime.ApplicationStarted.Register(() =>
         {
             MustangCliService mustangCliService = app.Services.GetRequiredService<MustangCliService>();
             bool available = await mustangCliService.CheckAvailabilityAsync(app.Lifetime.ApplicationStopping);
-            app.Logger.LogInformation("Mustang CLI warm-up finished (available: {Available}).", available);
+            if (app.Logger.IsEnabled(LogLevel.Information))
+            {
+                app.Logger.LogInformation("Mustang CLI warm-up finished (available: {Available}).", available);
+            }
         }
         catch (Exception ex)
         {
