@@ -65,7 +65,7 @@ public sealed partial class JavaService(ILogger<JavaService> logger)
 
             return new JavaInfoResult(IsAvailable: false, properties);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             logger.LogError(ex, "Failed to execute Java process.");
             // Any failure => not available, empty properties
