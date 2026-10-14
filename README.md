@@ -119,7 +119,7 @@ The API provides the following endpoints (all `POST` endpoints accept `multipart
 | `POST /api/pdf/validate-zugferd` | Validates a ZuGFeRD / Factur-X PDF |
 | `POST /api/pdf/extract-zugferd-xml` | Extracts the embedded XML from a ZuGFeRD / Factur-X PDF |
 | `POST /api/xml/validate` | Validates a Factur-X or UBL XML file |
-| `POST /api/xml/convert-to-pdf` | Converts a Factur-X or UBL XML file to PDF |
+Converts a Factur-X or UBL XML file to PDF. Optional query parameter `language` (`en`, `fr` or `de`, default `en`) |
 | `GET /api/health` | Reports Java and Mustang CLI availability and versions |
 
 Error responses carry an `ErrorCode`; see [ErrorCode.Examples.md](src/Server/Contracts/ErrorCode.Examples.md). ReDoc is also available at `/api/docs/redoc`.

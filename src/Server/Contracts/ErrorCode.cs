@@ -23,7 +23,7 @@ public enum ErrorCode
     Success = 0,
 
     // Mustang CLI Error Codes (1-27)
-    
+
     /// <summary>
     /// File not found.
     /// </summary>

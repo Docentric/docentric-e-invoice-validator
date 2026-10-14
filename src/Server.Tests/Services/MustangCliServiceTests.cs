@@ -157,4 +157,4 @@ public class MustangCliServiceTests
             File.Delete(output);
         }
     }
-    }
+}

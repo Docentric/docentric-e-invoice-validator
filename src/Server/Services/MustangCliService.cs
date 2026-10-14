@@ -10,6 +10,16 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <param name="logger">The logger instance for logging information and errors.</param>
 public sealed class MustangCliService(ILogger<MustangCliService> logger)
 {
+    /// <summary>
+    /// The output language used when none is specified.
+    /// </summary>
+    public const string DefaultLanguage = "en";
+
+    /// <summary>
+    /// The output languages supported by Mustang CLI.
+    /// </summary>
+    public static readonly IReadOnlySet<string> SupportedLanguages = new HashSet<string>(["en", "fr", "de"], StringComparer.OrdinalIgnoreCase);
+
     private const string JavaMaxMemory = "-Xmx1G";
     private const string FileEncoding = "-Dfile.encoding=UTF-8";
 
@@ -41,10 +51,14 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// </summary>
     /// <param name="sourceFilePath">The path to the XML file.</param>
     /// <param name="outputFilePath">The path where the generated PDF should be saved.</param>
+    /// <param name="language">The output language (en, fr or de). Falls back to <see cref="DefaultLanguage"/> when null or empty.</param>
     /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>A <see cref="MustangCliResult"/> containing conversion results.</returns>
-    public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath, CancellationToken cancellationToken)
-        => ExecuteAsync("pdf", ["--source", sourceFilePath, "--out", outputFilePath], cancellationToken);
+    /// <remarks>
+    /// The language is always passed explicitly, because Mustang CLI otherwise prompts for it on stdin and blocks.
+    /// </remarks>
+    public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath, string? language, CancellationToken cancellationToken)
+        => ExecuteAsync("pdf", ["--source", sourceFilePath, "--out", outputFilePath, "--language", string.IsNullOrWhiteSpace(language) ? DefaultLanguage : language], cancellationToken);
 
 
     /// <summary>

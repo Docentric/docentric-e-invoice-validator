@@ -18,6 +18,8 @@ public static class HealthEndpoints
     {
         endpoints.MapGet("api/health", HealthHandler)
             .WithTags("Server health")
+            .WithSummary("Checks server health")
+            .WithDescription("Verifies that the required dependencies (Java and the Mustang CLI jar) are available. Returns 200 when healthy and 404 when a dependency is missing.")
             .Produces<ServerHealthResponse>(StatusCodes.Status200OK, "application/json")
             .Produces<ServerHealthResponse>(StatusCodes.Status404NotFound, "application/json");
 

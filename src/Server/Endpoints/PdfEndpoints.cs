@@ -27,6 +27,8 @@ public static class PdfEndpoints
             .WithTags("ZuGFeRD PDF");
 
         group.MapPost("/validate-zugferd", ValidateZuGFeRDPdfHandler)
+            .WithSummary("Validates a ZuGFeRD PDF file")
+            .WithDescription("Validates the uploaded ZuGFeRD or Factur-X PDF, including its embedded XML, with Mustang CLI and returns the validation report.")
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<PdfFileValidationResponse>(StatusCodes.Status200OK, "application/json")
@@ -35,6 +37,8 @@ public static class PdfEndpoints
             .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/extract-zugferd-xml", ExtractZuGFeRDXmlHandler)
+            .WithSummary("Extracts the XML from a ZuGFeRD PDF file")
+            .WithDescription("Extracts the embedded Factur-X or ZuGFeRD XML invoice from the uploaded PDF using Mustang CLI.")
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<ExtractXmlFromPdfResponse>(StatusCodes.Status200OK, "application/json")
@@ -214,7 +218,7 @@ public static class PdfEndpoints
                 {
                     File.Delete(outputXml);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.LogError(ex, "Error during cleanup of temporary XML file on the path: {Path}.", outputXml);
                     // Ignore any errors during cleanup

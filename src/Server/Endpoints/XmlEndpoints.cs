@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Xml.Linq;
 
 using Docentric.EInvoice.Validator.RestServer.Configuration;
@@ -27,6 +28,8 @@ public static class XmlEndpoints
             .WithTags("Factur-X or UBL XML");
 
         group.MapPost("/validate", ValidateXmlHandler)
+            .WithSummary("Validates a Factur-X or UBL XML file")
+            .WithDescription("Validates the uploaded Factur-X or UBL XML invoice with Mustang CLI and returns the validation report.")
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<FileValidationResponse>(StatusCodes.Status200OK, "application/json")
@@ -35,6 +38,8 @@ public static class XmlEndpoints
             .WithRequestTimeout(Constants.RequestTimeouts.LongRunningPolicy);
 
         group.MapPost("/convert-to-pdf", ConvertXmlToPdfHandler)
+            .WithSummary("Converts a Factur-X or UBL XML file to PDF")
+            .WithDescription("Converts the uploaded Factur-X or UBL XML invoice to a human-readable PDF using Mustang CLI. The optional language query parameter selects the output language.")
             .Accepts<FileUploadRequest>("multipart/form-data")
             .DisableAntiforgery()
             .Produces<ConvertXmlToPdfResponse>(StatusCodes.Status200OK, "application/json")
@@ -98,10 +103,10 @@ public static class XmlEndpoints
             {
                 status = MustangValidationReportParser.Parse(mustangCliResult.StandardOutput).Overall;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                 /* keep status=unknown on parse issues */
-                 logger.LogError(ex, "Failed to parse Mustang CLI XML output");
+                /* keep status=unknown on parse issues */
+                logger.LogError(ex, "Failed to parse Mustang CLI XML output");
             }
 
             int statusCode = StatusCodes.Status400BadRequest;
@@ -133,6 +138,7 @@ public static class XmlEndpoints
     /// <param name="request">The HTTP request containing the uploaded file.</param>
     /// <param name="mustangCliService">The Mustang CLI service for executing commands.</param>
     /// <param name="uploadedFile">The file upload request with the XML file to convert.</param>
+    /// <param name="language">The optional output language (en, fr or de). Defaults to en.</param>
     /// <param name="loggerFactory">The logger factory for creating loggers.</param>
     /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>
@@ -143,7 +149,7 @@ public static class XmlEndpoints
     /// This endpoint converts Factur-X or UBL XML invoice data to a PDF document by invoking the Mustang CLI tool
     /// as an external Java process. The generated PDF file is automatically cleaned up after reading.
     /// </remarks>
-    private static async Task<IResult> ConvertXmlToPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken)
+    private static async Task<IResult> ConvertXmlToPdfHandler(HttpRequest request, MustangCliService mustangCliService, [FromForm] FileUploadRequest uploadedFile, ILoggerFactory loggerFactory, CancellationToken cancellationToken, [FromQuery, Description("Output language of the generated PDF: en, fr or de. Defaults to en.")] string? language = null)
     {
         ILogger logger = loggerFactory.CreateLogger(nameof(XmlEndpoints));
         if (!request.HasFormContentType)
@@ -151,6 +157,13 @@ public static class XmlEndpoints
             {
                 ErrorCode = ErrorCode.InvalidRequest,
                 ErrorMessage = "The request content type must be 'multipart/form-data'."
+            });
+
+        if (!string.IsNullOrWhiteSpace(language) && !MustangCliService.SupportedLanguages.Contains(language))
+            return Results.BadRequest(new ConvertXmlToPdfResponse
+            {
+                ErrorCode = ErrorCode.InvalidRequest,
+                ErrorMessage = $"The language '{language}' is not supported. Supported languages: {string.Join(", ", MustangCliService.SupportedLanguages)}."
             });
 
         if (!await FileTypeValidator.IsXmlAsync(uploadedFile.File, cancellationToken))
@@ -168,7 +181,7 @@ public static class XmlEndpoints
 
             outputPdf = Path.ChangeExtension(temporaryFile.FilePath, ".pdf");
 
-            MustangCliResult mustangCliResult = await mustangCliService.ConvertXmlToPdfAsync(temporaryFile.FilePath, outputPdf, cancellationToken);
+            MustangCliResult mustangCliResult = await mustangCliService.ConvertXmlToPdfAsync(temporaryFile.FilePath, outputPdf, language, cancellationToken);
 
             if (mustangCliResult.ProcessStartFailed)
             {
@@ -209,7 +222,7 @@ public static class XmlEndpoints
                 {
                     File.Delete(outputPdf);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     logger.LogError(ex, "Error during cleanup of temporary PDF file on the path: {Path}.", outputPdf);
                     // Ignore any errors during cleanup

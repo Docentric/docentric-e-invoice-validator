@@ -60,6 +60,37 @@ public class XmlEndpointsTests(RestServerFactory factory) : IClassFixture<RestSe
     }
 
     /// <summary>
+    /// Verifies that converting with an unsupported language returns the InvalidRequest error code.
+    /// </summary>
+    [Fact]
+    public async Task WhenConvertLanguageIsUnsupportedThenErrorCodeIsInvalidRequest()
+    {
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.FacturXXmlPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/xml/convert-to-pdf?language=xx", form, TestContext.Current.CancellationToken);
+        ConvertXmlToPdfResponse? body = await response.Content.ReadFromJsonAsync<ConvertXmlToPdfResponse>(TestContext.Current.CancellationToken);
+
+        Assert.Equal(ErrorCode.InvalidRequest, body?.ErrorCode);
+    }
+
+    /// <summary>
+    /// Verifies that converting a valid Factur-X XML with an explicit supported language returns PDF content.
+    /// </summary>
+    [Fact]
+    public async Task WhenConvertLanguageIsSpecifiedThenConvertToPdfReturnsPdfContent()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.FacturXXmlPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/xml/convert-to-pdf?language=de", form, TestContext.Current.CancellationToken);
+        ConvertXmlToPdfResponse? body = await response.Content.ReadFromJsonAsync<ConvertXmlToPdfResponse>(TestContext.Current.CancellationToken);
+
+        Assert.NotEmpty(body?.Pdf ?? []);
+    }
+
+    /// <summary>
     /// Verifies that a request that is not multipart/form-data is not processed successfully.
     /// </summary>
     /// <param name="url">The XML endpoint URL under test.</param>
