@@ -1,7 +1,10 @@
 ---
-description: Commit, push and open a pull request for the current branch following repository conventions
+name: create-pull-request
+description: Commit, push and open a pull request for the current branch following repository conventions.
+argument-hint: "[issue number]"
+disable-model-invocation: true
 ---
-Open a pull request for the current branch (issue #${input:issue:issue number}).
+Open a pull request for the current branch (issue number given as the argument; infer from the branch name if missing).
 
 1. Confirm with the user that the implementation is done as expected and has been reviewed; stop if not.
 2. Run the build and tests; fix failures.

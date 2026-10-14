@@ -1,5 +1,6 @@
 ---
-description: Review the local implementation against the Code Review checklist before opening a pull request
+name: review-implementation
+description: Review the local implementation against the Code Review checklist before opening a pull request.
 ---
 Review the uncommitted and unpushed changes on the current branch (diff against `main`).
 

@@ -1,5 +1,6 @@
 ---
-description: Generate a commit message for the current changes
+name: commit-message
+description: Generate a commit message for the current staged changes following repository conventions.
 ---
 Write a commit message for the current staged changes (or the working tree if nothing is staged).
 

@@ -1,7 +1,9 @@
 ---
-description: Review a pull request using the repository code review checklist
+name: review-pull-request
+description: Review a GitHub pull request using the repository code review checklist.
+argument-hint: "[PR number]"
 ---
-Review pull request #${input:pr:PR number} using the GitHub MCP tools (details, diff, files, check runs, existing review comments).
+Review the pull request given as the argument (ask for the number if missing) using the GitHub MCP tools (details, diff, files, check runs, existing review comments).
 
 Apply the "Code Review" checklist in `.github/copilot-instructions.md`.
 
