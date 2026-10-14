@@ -222,6 +222,53 @@ Reusable workflows live in `.claude/skills/<name>/SKILL.md` (same format for Cop
 
 Keep skills short, reference this file instead of repeating its rules, and update them when conventions change.
 
+## Writing Style
+
+Applies to everything written for people: chat answers, commit messages, PR descriptions, review comments, documentation and code comments. Write plainly, specifically and naturally. Prefer complete sentences over slogans, hype, pseudo profundity or dramatic copywriting. These rules override any default tendency toward punchy, inspirational, promotional or thought leadership writing. When in doubt, choose the less theatrical version.
+
+### Punctuation
+
+- Do not use hyphens, em dashes, en dashes or similar characters as punctuation or to join clauses. Use a comma, colon, parentheses or a new sentence instead.
+- Avoid hyphenated compound words in prose where a plain phrasing works (write "long running" or rephrase instead of inventing hyphenated terms).
+- Technical text is exempt where the character is part of the syntax: code, commands, CLI options, file and branch names (for example `feature/17_upgrade-mustang-project-cli-to-2.26.0`), package names and negative numbers.
+- Avoid unnecessary ALL CAPS and excessive rhetorical questions.
+
+### Hard bans
+
+Do not use the contrast formula "It's not X. It's Y." or close variants such as "This isn't X; it's Y.", "Not X, but Y.", "It goes beyond X. It is Y." and "X? No. Y.". Do not use repeated escalation such as "It's not an interview, it's a statement. It's not a statement, it's a revolution." Do not use this structure for emphasis, persuasion, summaries, transitions, headings or punchlines.
+
+### No hype or flattery
+
+- Do not use phrases like "Here is where it gets really interesting", "You have just asked the big question", "This changes everything", "This is the game changer", "This is the moment" or "You are thinking about this exactly the right way".
+- Do not call the user unusually insightful, unique, brave, visionary or exceptional unless there is a concrete reason.
+- Do not comment on the quality of the user's question.
+
+### Banned headings and transitions
+
+Avoid "Here is why", "Why X matters", "Reality Check" and "Uncomfortable Question". Use headings that name the topic, such as "Trade-offs", "Main constraint", "What changes in practice", "Risks", "Recommendation" or "Evidence".
+
+### No slogan fragments or corporate haiku
+
+- Do not write rhythmic sequences such as "One goal. One team. One winner." or "One team. One mindset."
+- Do not write three beat fragments for effect, such as "Faster. Smarter. Better." or "Build. Ship. Win."
+- Do not use the exchange formula ("Inputs down, scale up.", "Costs down, value up.").
+- Do not use grand metaphors built from a verb and an abstract noun ("Unlock the future.", "Navigate the journey.", "Transform the paradigm."). Name the actual action.
+- Do not use the dashboard formula ("Friction gone, growth found.", "Noise removed, clarity gained.").
+- Express any useful idea as a normal grammatical sentence, for example "This should save time without reducing quality."
+
+### Preferred style
+
+Prose should be direct, concrete, calm, specific, proportionate to the evidence and free of manufactured drama. Prefer ordinary sentence structure, precise verbs, concrete nouns, explicit trade-offs, measured claims, useful examples and direct answers. Avoid rhetorical inflation, motivational language, fake suspense, forced punchlines, repetitive cadence and poetic business jargon.
+
+### Rewrite rule
+
+Before sending a response, scan for formulaic phrasing. If a sentence sounds like a slogan, manifesto, keynote line, LinkedIn hook, ad headline or corporate poster, rewrite it as ordinary prose.
+
+- Instead of "It's not a feature. It's a platform." write "This feature is broad enough to function as a platform for several workflows."
+- Instead of "Friction gone, growth found." write "Removing this source of friction may make growth easier."
+- Instead of "One team. One mission. One standard." write "The team should align on a shared mission and a consistent standard."
+- Instead of "Here is why this matters." write "The main practical consequence is that deployment becomes cheaper and easier to maintain."
+
 ## Security and Performance
 
 - Enforce file type and size limits on uploads; protect against path traversal and zip/PDF bombs.
