@@ -1,4 +1,4 @@
-# Agent Instructions – Docentric e-Invoice Validator
+# Agent Instructions: Docentric e-Invoice Validator
 
 Shared instructions for all AI coding agents (GitHub Copilot, Claude Code, others). This file is the single source of truth; `CLAUDE.md` and `.github/copilot-instructions.md` only point here.
 
@@ -38,7 +38,7 @@ Solution: `src/Docentric.EInvoice.Validator.slnx`.
   - Work without an issue: `chore/noissue_<description>`.
 - Keep branches up to date by rebasing on or merging `main`; resolve conflicts locally.
 - Delete the branch after merge.
-- Releases are produced from Git tags prefixed with `v` (semantic/calendar version, e.g. `v2026.3.0`; the `v` is stripped to form the version) which override
+- Releases are produced from Git tags named `v<SemVer>` (`vMAJOR.MINOR.PATCH`, optionally with a prerelease suffix such as `v1.2.3-preview.0`). The pipeline strips the `v` and passes the result as `/p:Version`, which overrides the placeholder `0.0.0` in `src/Directory.Build.props`.
 
 ## Commit Messages
 
@@ -54,11 +54,11 @@ Format: `#<issue> <Imperative summary>`
 
 - Target `main`. Title follows the commit format: `#<issue> <Imperative summary>`.
 - Description must include:
-  1. **Summary** – what and why.
-  2. **Related issue** – `Closes #<n>`.
-  3. **Changes** – bullet list of notable changes.
-  4. **Testing** – automated tests added/run and manual verification (including Docker if relevant).
-  5. **Breaking changes / notes** – API, configuration or deployment impact, if any.
+  1. **Summary**: what and why.
+  2. **Related issue**: `Closes #<n>`.
+  3. **Changes**: bullet list of notable changes.
+  4. **Testing**: automated tests added/run and manual verification (including Docker if relevant).
+  5. **Breaking changes / notes**: API, configuration or deployment impact, if any.
 - Keep PRs small and focused; CI (`build.yml`) must pass.
 - Add or update tests and documentation (README, `ErrorCode.Examples.md`, Swagger metadata) when behavior changes.
 - Prefer squash merge with a message following the commit format.
@@ -228,9 +228,8 @@ Applies to everything written for people: chat answers, commit messages, PR desc
 
 ### Punctuation
 
-- Do not use hyphens, em dashes, en dashes or similar characters as punctuation or to join clauses. Use a comma, colon, parentheses or a new sentence instead.
-- Avoid hyphenated compound words in prose where a plain phrasing works (write "long running" or rephrase instead of inventing hyphenated terms).
-- Technical text is exempt where the character is part of the syntax: code, commands, CLI options, file and branch names (for example `feature/17_upgrade-mustang-project-cli-to-2.26.0`), package names and negative numbers.
+- Normal hyphens are allowed (compound words, branch names, CLI options, ranges written with a hyphen).
+- Do not use em dashes, en dashes or similar characters (horizontal bar, figure dash, minus sign used as a dash, `--` used as a dash) as punctuation or to join clauses. Use a comma, colon, parentheses or a new sentence instead.
 - Avoid unnecessary ALL CAPS and excessive rhetorical questions.
 
 ### Hard bans
