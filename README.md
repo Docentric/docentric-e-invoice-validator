@@ -1,7 +1,10 @@
 # Docentric e-Invoice Validator
 
 [![Build Status](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml/badge.svg)](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml)
+[![Coverage (CI)](https://raw.githubusercontent.com/Docentric/docentric-e-invoice-validator/badges/ci-coverage.svg)](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml)
+[![Release](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml/badge.svg)](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml)
 [![Docker Hub](https://img.shields.io/docker/v/docentric/e-invoice-validator?label=Docker%20Hub)](https://hub.docker.com/r/docentric/e-invoice-validator)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A REST API and web-based validation tool for **ZuGFeRD** and **Factur-X** **e-invoices**, built with ASP.NET Core and React.
