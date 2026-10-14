@@ -1,4 +1,4 @@
-﻿* text=auto eol=crlf
+* text=auto eol=crlf
 *.sh text eol=lf
 Dockerfile text eol=lf
 .env text eol=lf

@@ -64,7 +64,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// <summary>
     /// Gets the version of the Mustang CLI jar file deployed next to the application.
     /// </summary>
-    /// <returns>The version read from the jar file name, or <see langword="null"/> when the jar file is not found.</returns>
+    /// <returns>The version read from the embedded Maven <c>pom.properties</c> of the jar, or <see langword="null"/> when the jar file is not found, cannot be read or does not contain a valid version.</returns>
     public string? GetMustangCliVersion()
         => MustangJarLocator.ReadVersion(AppContext.BaseDirectory);
 

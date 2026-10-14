@@ -41,8 +41,16 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
             $"{Guid.NewGuid():N}{extension}"
         );
 
-        await using FileStream targetStream = File.Create(tempFilePath);
-        await request.File.CopyToAsync(targetStream, cancellationToken);
+        try
+        {
+            await using FileStream targetStream = File.Create(tempFilePath);
+            await request.File.CopyToAsync(targetStream, cancellationToken);
+        }
+        catch
+        {
+            TryDelete(tempFilePath);
+            throw;
+        }
 
         return new TemporaryUploadedFile(tempFilePath);
     }
@@ -55,10 +63,15 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
         if (_disposed) return;
         _disposed = true;
 
+        TryDelete(FilePath);
+    }
+
+    private static void TryDelete(string filePath)
+    {
         try
         {
-            if (File.Exists(FilePath))
-                File.Delete(FilePath);
+            if (File.Exists(filePath))
+                File.Delete(filePath);
         }
         catch
         {

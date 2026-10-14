@@ -19,9 +19,8 @@ public static class HealthEndpoints
         endpoints.MapGet("api/health", HealthHandler)
             .WithTags("Server health")
             .WithSummary("Checks server health")
-            .WithDescription("Verifies that the required dependencies (Java and the Mustang CLI jar) are available. Returns 200 when healthy and 404 when a dependency is missing.")
-            .Produces<ServerHealthResponse>(StatusCodes.Status200OK, "application/json")
-            .Produces<ServerHealthResponse>(StatusCodes.Status404NotFound, "application/json");
+            .WithDescription("Verifies that the required dependencies (Java and the Mustang CLI jar) are available. Always returns 200; check the presence flags in the response to detect a missing dependency.")
+            .Produces<ServerHealthResponse>(StatusCodes.Status200OK, "application/json");
 
         return endpoints;
     }
@@ -30,8 +29,7 @@ public static class HealthEndpoints
     /// Handles health check requests by verifying the availability of required dependencies.
     /// </summary>
     /// <returns>
-    /// Returns 200 OK with health status when all dependencies are available,
-    /// or 404 Not Found when dependencies are missing.
+    /// Always returns 200 OK with the health status; missing dependencies are reported in the response body.
     /// </returns>
     private static async Task<IResult> HealthHandler(JavaService javaService, MustangCliService mustangCliService, CancellationToken cancellationToken)
     {
