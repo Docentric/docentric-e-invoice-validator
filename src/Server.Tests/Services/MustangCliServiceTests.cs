@@ -110,4 +110,51 @@ public class MustangCliServiceTests
             File.Delete(output);
         }
     }
-}
+
+    /// <summary>
+    /// Verifies that a valid Factur-X invoice is validated successfully.
+    /// </summary>
+    [Fact]
+    public async Task WhenFacturXXmlIsValidThenValidateSucceeds()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+
+        MustangCliResult result = await _service.ValidateAsync(SampleFiles.FacturXXmlPath, TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsSuccess);
+    }
+
+    /// <summary>
+    /// Verifies that a valid ZUGFeRD PDF is validated successfully.
+    /// </summary>
+    [Fact]
+    public async Task WhenZugferdPdfIsValidThenValidateSucceeds()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+
+        MustangCliResult result = await _service.ValidateAsync(SampleFiles.ZugferdPdfPath, TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsSuccess);
+    }
+
+    /// <summary>
+    /// Verifies that the XML embedded in a valid ZUGFeRD PDF is extracted to the output file.
+    /// </summary>
+    [Fact]
+    public async Task WhenZugferdPdfIsValidThenExtractXmlCreatesOutputFile()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        string output = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".xml");
+
+        try
+        {
+            await _service.ExtractXmlAsync(SampleFiles.ZugferdPdfPath, output, TestContext.Current.CancellationToken);
+
+            Assert.True(new FileInfo(output).Length > 0);
+        }
+        finally
+        {
+            File.Delete(output);
+        }
+    }
+    }

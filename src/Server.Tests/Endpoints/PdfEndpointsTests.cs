@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 
 using Docentric.EInvoice.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.Tests.Services;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.Endpoints;
 
@@ -73,5 +74,52 @@ public class PdfEndpointsTests(RestServerFactory factory) : IClassFixture<RestSe
         using HttpResponseMessage response = await client.PostAsync(url, content, TestContext.Current.CancellationToken);
 
         Assert.False(response.IsSuccessStatusCode);
+    }
+
+    /// <summary>
+    /// Verifies that validating a valid ZUGFeRD PDF returns 200 OK.
+    /// </summary>
+    [Fact]
+    public async Task WhenZugferdPdfIsValidThenValidateReturnsOk()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.ZugferdPdfPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/pdf/validate-zugferd", form, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Verifies that validating a valid ZUGFeRD PDF reports it as valid.
+    /// </summary>
+    [Fact]
+    public async Task WhenZugferdPdfIsValidThenValidateReportsIsValid()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.ZugferdPdfPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/pdf/validate-zugferd", form, TestContext.Current.CancellationToken);
+        PdfFileValidationResponse? body = await response.Content.ReadFromJsonAsync<PdfFileValidationResponse>(TestContext.Current.CancellationToken);
+
+        Assert.True(body?.IsValid);
+    }
+
+    /// <summary>
+    /// Verifies that the XML embedded in a valid ZUGFeRD PDF is extracted.
+    /// </summary>
+    [Fact]
+    public async Task WhenZugferdPdfIsValidThenExtractReturnsXml()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.ZugferdPdfPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/pdf/extract-zugferd-xml", form, TestContext.Current.CancellationToken);
+        ExtractXmlFromPdfResponse? body = await response.Content.ReadFromJsonAsync<ExtractXmlFromPdfResponse>(TestContext.Current.CancellationToken);
+
+        Assert.False(string.IsNullOrWhiteSpace(body?.Xml));
     }
 }

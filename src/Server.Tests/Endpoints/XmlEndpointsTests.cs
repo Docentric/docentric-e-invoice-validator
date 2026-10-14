@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 
 using Docentric.EInvoice.Validator.RestServer.Contracts;
+using Docentric.EInvoice.Validator.RestServer.Tests.Services;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.Endpoints;
 
@@ -73,5 +74,55 @@ public class XmlEndpointsTests(RestServerFactory factory) : IClassFixture<RestSe
         using HttpResponseMessage response = await client.PostAsync(url, content, TestContext.Current.CancellationToken);
 
         Assert.False(response.IsSuccessStatusCode);
+    }
+
+    /// <summary>
+    /// Verifies that validating a valid Factur-X invoice returns 200 OK.
+    /// </summary>
+    [Fact]
+    public async Task WhenFacturXXmlIsValidThenValidateReturnsOk()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.FacturXXmlPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/xml/validate", form, TestContext.Current.CancellationToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    /// <summary>
+    /// Verifies that validating a valid Factur-X invoice reports it as valid.
+    /// </summary>
+    [Fact]
+    public async Task WhenFacturXXmlIsValidThenValidateReportsIsValid()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent form = MultipartContentFactory.CreateFromPath(SampleFiles.FacturXXmlPath);
+
+        using HttpResponseMessage response = await client.PostAsync("/api/xml/validate", form, TestContext.Current.CancellationToken);
+        FileValidationResponse? body = await response.Content.ReadFromJsonAsync<FileValidationResponse>(TestContext.Current.CancellationToken);
+
+        Assert.True(body?.IsValid);
+    }
+
+    /// <summary>
+    /// Verifies that XML extracted from a valid ZUGFeRD PDF can be converted back to a PDF.
+    /// </summary>
+    [Fact]
+    public async Task WhenXmlIsExtractedFromZugferdPdfThenConvertToPdfReturnsPdfContent()
+    {
+        Assert.SkipUnless(JavaTestHelper.IsJavaInstalled, JavaTestHelper.SkipReason);
+        using HttpClient client = factory.CreateApiClient();
+        using MultipartFormDataContent pdfForm = MultipartContentFactory.CreateFromPath(SampleFiles.ZugferdPdfPath);
+        using HttpResponseMessage extractResponse = await client.PostAsync("/api/pdf/extract-zugferd-xml", pdfForm, TestContext.Current.CancellationToken);
+        ExtractXmlFromPdfResponse? extracted = await extractResponse.Content.ReadFromJsonAsync<ExtractXmlFromPdfResponse>(TestContext.Current.CancellationToken);
+        using MultipartFormDataContent xmlForm = MultipartContentFactory.CreateFile(extracted?.Xml ?? string.Empty, "extracted.xml");
+
+        using HttpResponseMessage response = await client.PostAsync("/api/xml/convert-to-pdf", xmlForm, TestContext.Current.CancellationToken);
+        ConvertXmlToPdfResponse? body = await response.Content.ReadFromJsonAsync<ConvertXmlToPdfResponse>(TestContext.Current.CancellationToken);
+
+        Assert.NotEmpty(body?.Pdf ?? []);
     }
 }

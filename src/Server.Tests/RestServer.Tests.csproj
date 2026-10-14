@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\..\samples\factur-x e-invoice.xml" Link="Samples\factur-x e-invoice.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\samples\ZuGFeRD e-Invoice.pdf" Link="Samples\ZuGFeRD e-Invoice.pdf" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="TestResults\**" />
     <EmbeddedResource Remove="TestResults\**" />
     <None Remove="TestResults\**" />
