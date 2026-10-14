@@ -17,5 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="TestResults\**" />
+    <EmbeddedResource Remove="TestResults\**" />
+    <None Remove="TestResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Server\RestServer.csproj" />  </ItemGroup>
 </Project>
