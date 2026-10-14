@@ -14,7 +14,7 @@ Checklist:
 - **Contracts:** no breaking change to REST contracts or `ErrorCode` values unless requested; Swagger metadata, `ErrorCode.Examples.md` and README updated when behavior changes.
 - **Security:** uploads validated (type, size, path traversal), temp files always deleted, no shell string concatenation for Java/Mustang, no secrets or file contents in logs, no stack traces or internal paths in responses.
 - **Style:** `.editorconfig`, naming, least-exposure access modifiers, XML docs on every public member, TSDoc on exported frontend symbols.
-- **Tests:** new/changed behavior has deterministic tests including edge cases and regressions; no loops/conditionals in tests.
+- **Tests:** new/changed behavior has deterministic tests including edge cases and regressions; no loops/conditionals in tests; public test classes and methods have XML docs.
 - **Dependencies:** new packages justified; `package-lock.json` committed with `package.json`; no suppressed audit warnings.
 - **Pipeline:** workflow changes keep SHA-pinned actions, least-privilege permissions and `env:`-passed untrusted values.
 - **Generated files:** no manual edits to `wwwroot/assets/*`, `*.g.cs` or the Mustang JAR (outside a dedicated upgrade).

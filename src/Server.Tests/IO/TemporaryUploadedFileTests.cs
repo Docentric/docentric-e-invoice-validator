@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.IO;
 
+/// <summary>
+/// Tests the temporary file handling of TemporaryUploadedFile.
+/// </summary>
 public class TemporaryUploadedFileTests
 {
     private static FileUploadRequest CreateRequest(string content, string fileName)
@@ -15,6 +18,9 @@ public class TemporaryUploadedFileTests
         return new FileUploadRequest { File = new FormFile(new MemoryStream(bytes), 0, bytes.Length, "file", fileName) };
     }
 
+    /// <summary>
+    /// Verifies that the uploaded content is written to the temporary file.
+    /// </summary>
     [Fact]
     public async Task WhenFileIsValidThenCreateAsyncWritesContentToDisk()
     {
@@ -26,6 +32,9 @@ public class TemporaryUploadedFileTests
         Assert.Equal("hello", content);
     }
 
+    /// <summary>
+    /// Verifies that the temporary file keeps the extension of the uploaded file.
+    /// </summary>
     [Fact]
     public async Task WhenFileHasExtensionThenCreateAsyncKeepsExtension()
     {
@@ -35,6 +44,9 @@ public class TemporaryUploadedFileTests
         Assert.EndsWith(".xml", file.FilePath);
     }
 
+    /// <summary>
+    /// Verifies that disposing the instance deletes the temporary file.
+    /// </summary>
     [Fact]
     public async Task WhenDisposedThenFileIsDeleted()
     {
@@ -46,6 +58,9 @@ public class TemporaryUploadedFileTests
         Assert.False(File.Exists(file.FilePath));
     }
 
+    /// <summary>
+    /// Verifies that disposing the instance asynchronously deletes the temporary file.
+    /// </summary>
     [Fact]
     public async Task WhenDisposedAsyncThenFileIsDeleted()
     {
@@ -57,6 +72,9 @@ public class TemporaryUploadedFileTests
         Assert.False(File.Exists(file.FilePath));
     }
 
+    /// <summary>
+    /// Verifies that disposing the instance more than once does not throw.
+    /// </summary>
     [Fact]
     public async Task WhenDisposedTwiceThenNoExceptionIsThrown()
     {
@@ -69,6 +87,9 @@ public class TemporaryUploadedFileTests
         Assert.Null(exception);
     }
 
+    /// <summary>
+    /// Verifies that a request without a file is rejected.
+    /// </summary>
     [Fact]
     public async Task WhenFileIsNullThenCreateAsyncThrowsArgumentException()
     {
@@ -78,6 +99,9 @@ public class TemporaryUploadedFileTests
             TemporaryUploadedFile.CreateAsync(request, TestContext.Current.CancellationToken));
     }
 
+    /// <summary>
+    /// Verifies that an empty uploaded file is rejected.
+    /// </summary>
     [Fact]
     public async Task WhenFileIsEmptyThenCreateAsyncThrowsArgumentException()
     {
@@ -87,6 +111,9 @@ public class TemporaryUploadedFileTests
             TemporaryUploadedFile.CreateAsync(request, TestContext.Current.CancellationToken));
     }
 
+    /// <summary>
+    /// Verifies that an uploaded file without a file name is rejected.
+    /// </summary>
     [Fact]
     public async Task WhenFileNameIsBlankThenCreateAsyncThrowsArgumentException()
     {

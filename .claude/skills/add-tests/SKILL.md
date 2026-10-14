@@ -9,5 +9,6 @@ Write tests for the selected code in `src/Server.Tests`, following the "Tests" s
 - Cover normal, edge (empty/invalid input), cancellation and failure cases.
 - Test via public APIs only; mock only external dependencies (Java process, file system).
 - No loops or conditionals; deterministic and parallel-safe.
+- Document every public test class and test method with XML docs (`<summary>`, plus `<param>` for theory and fixture parameters).
 
 Run `dotnet test src/Docentric.EInvoice.Validator.slnx` and fix failures.

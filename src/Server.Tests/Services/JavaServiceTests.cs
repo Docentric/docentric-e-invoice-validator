@@ -4,10 +4,16 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.Services;
 
+/// <summary>
+/// Tests JavaService against the Java runtime installed on the machine. Tests are skipped when Java is not available.
+/// </summary>
 public class JavaServiceTests
 {
     private readonly JavaService _service = new(NullLogger<JavaService>.Instance);
 
+    /// <summary>
+    /// Verifies that Java is reported as available together with its system properties.
+    /// </summary>
     [Fact]
     public async Task WhenJavaIsInstalledThenGetJavaInfoReturnsAvailableWithProperties()
     {
@@ -19,6 +25,9 @@ public class JavaServiceTests
         Assert.NotEmpty(result.Properties);
     }
 
+    /// <summary>
+    /// Verifies that the returned Java properties contain java.version.
+    /// </summary>
     [Fact]
     public async Task WhenJavaIsInstalledThenGetJavaInfoContainsJavaVersionProperty()
     {
@@ -29,6 +38,9 @@ public class JavaServiceTests
         Assert.True(result.Properties.ContainsKey("java.version"));
     }
 
+    /// <summary>
+    /// Verifies that a canceled request reports Java as not available.
+    /// </summary>
     [Fact]
     public async Task WhenCancellationIsRequestedThenGetJavaInfoReturnsNotAvailable()
     {

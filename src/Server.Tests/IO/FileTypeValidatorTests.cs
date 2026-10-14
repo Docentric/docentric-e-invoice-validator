@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.IO;
 
+/// <summary>
+/// Tests the magic-byte file type detection of FileTypeValidator.
+/// </summary>
 public class FileTypeValidatorTests
 {
     private static FormFile CreateFile(byte[] content) =>
@@ -13,6 +16,9 @@ public class FileTypeValidatorTests
 
     private static FormFile CreateFile(string content) => CreateFile(Encoding.UTF8.GetBytes(content));
 
+    /// <summary>
+    /// Verifies that content starting with the PDF signature is recognized as PDF.
+    /// </summary>
     [Fact]
     public async Task WhenContentStartsWithPdfSignatureThenIsPdfReturnsTrue()
     {
@@ -23,6 +29,9 @@ public class FileTypeValidatorTests
         Assert.True(result);
     }
 
+    /// <summary>
+    /// Verifies that content shorter than the PDF signature is not recognized as PDF.
+    /// </summary>
     [Fact]
     public async Task WhenContentIsShorterThanPdfSignatureThenIsPdfReturnsFalse()
     {
@@ -33,6 +42,9 @@ public class FileTypeValidatorTests
         Assert.False(result);
     }
 
+    /// <summary>
+    /// Verifies that empty content is not recognized as PDF.
+    /// </summary>
     [Fact]
     public async Task WhenContentIsEmptyThenIsPdfReturnsFalse()
     {
@@ -43,6 +55,9 @@ public class FileTypeValidatorTests
         Assert.False(result);
     }
 
+    /// <summary>
+    /// Verifies that non-PDF content is not recognized as PDF.
+    /// </summary>
     [Fact]
     public async Task WhenContentIsNotPdfThenIsPdfReturnsFalse()
     {
@@ -53,6 +68,9 @@ public class FileTypeValidatorTests
         Assert.False(result);
     }
 
+    /// <summary>
+    /// Verifies that PDF detection observes a canceled token.
+    /// </summary>
     [Fact]
     public async Task WhenCancellationIsRequestedThenIsPdfThrows()
     {
@@ -63,6 +81,10 @@ public class FileTypeValidatorTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => FileTypeValidator.IsPdfAsync(file, cts.Token));
     }
 
+    /// <summary>
+    /// Verifies that content that looks like XML is recognized as XML.
+    /// </summary>
+    /// <param name="content">The file content under test.</param>
     [Theory]
     [InlineData("<?xml version=\"1.0\"?><a/>")]
     [InlineData("<root/>")]
@@ -78,6 +100,9 @@ public class FileTypeValidatorTests
         Assert.True(result);
     }
 
+    /// <summary>
+    /// Verifies that XML starting with a UTF-8 byte order mark is recognized as XML.
+    /// </summary>
     [Fact]
     public async Task WhenXmlHasUtf8BomThenIsXmlReturnsTrue()
     {
@@ -89,6 +114,9 @@ public class FileTypeValidatorTests
         Assert.True(result);
     }
 
+    /// <summary>
+    /// Verifies that empty content is not recognized as XML.
+    /// </summary>
     [Fact]
     public async Task WhenContentIsEmptyThenIsXmlReturnsFalse()
     {
@@ -99,6 +127,10 @@ public class FileTypeValidatorTests
         Assert.False(result);
     }
 
+    /// <summary>
+    /// Verifies that content that does not look like XML is not recognized as XML.
+    /// </summary>
+    /// <param name="content">The file content under test.</param>
     [Theory]
     [InlineData("%PDF-1.7 content")]
     [InlineData("plain text")]
@@ -114,6 +146,9 @@ public class FileTypeValidatorTests
         Assert.False(result);
     }
 
+    /// <summary>
+    /// Verifies that XML detection observes a canceled token.
+    /// </summary>
     [Fact]
     public async Task WhenCancellationIsRequestedThenIsXmlThrows()
     {

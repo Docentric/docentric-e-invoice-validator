@@ -104,6 +104,7 @@ Follow `.editorconfig` first:
 - Project: `src/Server.Tests`; framework: **xUnit v3** (`[Fact]`, `[Theory]` + `[InlineData]`). Use the framework's built-in `Assert`.
 - Mirror source structure: `MustangValidationReportParser` -> `MustangValidationReportParserTests`.
 - Test names describe behavior: `WhenReportContainsErrorsThenResultIsInvalid` (or the existing convention in the file).
+- Every public test class and public test method (`[Fact]`/`[Theory]`) must have XML documentation: a `<summary>` describing the verified behavior, plus `<param>` for `[Theory]` parameters and primary-constructor parameters (e.g. fixtures). Private helpers need no docs.
 - Arrange-Act-Assert, one behavior per test, one logical assertion per test; use `[Theory]` for multiple outcomes of one precondition.
 - No conditionals or loops inside tests. Tests must be deterministic and independent (parallel-safe, no static mutable state).
 - Test through public APIs; avoid `InternalsVisibleTo` and visibility changes.

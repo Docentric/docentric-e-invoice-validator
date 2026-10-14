@@ -5,6 +5,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.Services;
 
+/// <summary>
+/// Tests MustangCliService against the Mustang CLI jar deployed next to the tests. Tests that start Java are skipped when Java is not available.
+/// </summary>
 public class MustangCliServiceTests
 {
     private readonly MustangCliService _service = new(NullLogger<MustangCliService>.Instance);
@@ -16,6 +19,9 @@ public class MustangCliServiceTests
         return path;
     }
 
+    /// <summary>
+    /// Verifies that the version of the deployed Mustang CLI jar is returned.
+    /// </summary>
     [Fact]
     public void WhenJarIsDeployedThenGetMustangCliVersionReturnsVersion()
     {
@@ -24,6 +30,9 @@ public class MustangCliServiceTests
         Assert.False(string.IsNullOrWhiteSpace(version));
     }
 
+    /// <summary>
+    /// Verifies that Mustang CLI is reported as available when Java is installed.
+    /// </summary>
     [Fact]
     public async Task WhenJavaIsInstalledThenCheckAvailabilityReturnsTrue()
     {
@@ -34,6 +43,9 @@ public class MustangCliServiceTests
         Assert.True(result);
     }
 
+    /// <summary>
+    /// Verifies that a canceled availability check reports Mustang CLI as not available.
+    /// </summary>
     [Fact]
     public async Task WhenCancellationIsRequestedThenCheckAvailabilityReturnsFalse()
     {
@@ -46,6 +58,9 @@ public class MustangCliServiceTests
         Assert.False(result);
     }
 
+    /// <summary>
+    /// Verifies that a canceled validation returns the ProcessingTimeout exit code.
+    /// </summary>
     [Fact]
     public async Task WhenCancellationIsRequestedThenValidateReturnsProcessingTimeout()
     {
@@ -58,6 +73,9 @@ public class MustangCliServiceTests
         Assert.Equal((int)ErrorCode.ProcessingTimeout, result.ExitCode);
     }
 
+    /// <summary>
+    /// Verifies that validating a missing file starts the process and returns diagnostic output.
+    /// </summary>
     [Fact]
     public async Task WhenSourceFileDoesNotExistThenValidateDoesNotSucceed()
     {
@@ -70,6 +88,9 @@ public class MustangCliServiceTests
         Assert.False(string.IsNullOrWhiteSpace(result.StandardOutput + result.StandardError));
     }
 
+    /// <summary>
+    /// Verifies that extracting XML from an invalid PDF still starts the Mustang CLI process.
+    /// </summary>
     [Fact]
     public async Task WhenPdfIsInvalidThenExtractXmlStillStartsProcess()
     {

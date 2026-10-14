@@ -4,6 +4,9 @@ using Docentric.EInvoice.Validator.RestServer.Services;
 
 namespace Docentric.EInvoice.Validator.RestServer.Tests.Services;
 
+/// <summary>
+/// Tests how MustangJarLocator finds the Mustang CLI jar and reads its version.
+/// </summary>
 public class MustangJarLocatorTests
 {
     private const string PomPath = "META-INF/maven/org.mustangproject/validator/pom.properties";
@@ -32,6 +35,9 @@ public class MustangJarLocatorTests
 
     private static string Pom(string version) => $"artifactId=validator\r\ngroupId=org.mustangproject\r\nversion={version}\r\n";
 
+    /// <summary>
+    /// Verifies that the file name of an existing jar is returned.
+    /// </summary>
     [Fact]
     public void WhenJarExistsThenFindJarFileNameReturnsFileName()
     {
@@ -41,6 +47,9 @@ public class MustangJarLocatorTests
         Assert.Equal("Mustang-CLI-2.26.0.jar", MustangJarLocator.FindJarFileName(directory));
     }
 
+    /// <summary>
+    /// Verifies that the jar file name is returned even when the file is not a valid archive.
+    /// </summary>
     [Fact]
     public void WhenJarIsNotAValidArchiveThenFindJarFileNameStillReturnsFileName()
     {
@@ -50,6 +59,9 @@ public class MustangJarLocatorTests
         Assert.Equal("Mustang-CLI-2.26.0.jar", MustangJarLocator.FindJarFileName(directory));
     }
 
+    /// <summary>
+    /// Verifies that the last jar by ordinal file name is returned when several jars exist.
+    /// </summary>
     [Fact]
     public void WhenMultipleJarsExistThenFindJarFileNameReturnsLastByOrdinalName()
     {
@@ -60,6 +72,9 @@ public class MustangJarLocatorTests
         Assert.Equal("Mustang-CLI-b.jar", MustangJarLocator.FindJarFileName(directory));
     }
 
+    /// <summary>
+    /// Verifies that null is returned when the directory contains no jar.
+    /// </summary>
     [Fact]
     public void WhenNoJarExistsThenFindJarFileNameReturnsNull()
     {
@@ -69,6 +84,9 @@ public class MustangJarLocatorTests
         Assert.Null(MustangJarLocator.FindJarFileName(directory));
     }
 
+    /// <summary>
+    /// Verifies that null is returned when the directory does not exist.
+    /// </summary>
     [Fact]
     public void WhenDirectoryDoesNotExistThenFindJarFileNameReturnsNull()
     {
@@ -77,12 +95,18 @@ public class MustangJarLocatorTests
         Assert.Null(MustangJarLocator.FindJarFileName(directory));
     }
 
+    /// <summary>
+    /// Verifies that a whitespace directory is rejected when finding the jar.
+    /// </summary>
     [Fact]
     public void WhenDirectoryIsWhitespaceThenFindJarFileNameThrowsArgumentException()
     {
         Assert.Throws<ArgumentException>(() => MustangJarLocator.FindJarFileName(" "));
     }
 
+    /// <summary>
+    /// Verifies that the version is read from pom.properties inside the jar.
+    /// </summary>
     [Fact]
     public void WhenJarContainsPomPropertiesThenReadVersionReturnsJarVersion()
     {
@@ -92,6 +116,9 @@ public class MustangJarLocatorTests
         Assert.Equal("2.26.0", MustangJarLocator.ReadVersion(directory));
     }
 
+    /// <summary>
+    /// Verifies that null is returned when the jar has no pom.properties.
+    /// </summary>
     [Fact]
     public void WhenJarHasNoPomPropertiesThenReadVersionReturnsNull()
     {
@@ -101,6 +128,9 @@ public class MustangJarLocatorTests
         Assert.Null(MustangJarLocator.ReadVersion(directory));
     }
 
+    /// <summary>
+    /// Verifies that null is returned when pom.properties has no valid version.
+    /// </summary>
     [Fact]
     public void WhenPomPropertiesHasNoValidVersionThenReadVersionReturnsNull()
     {
@@ -110,6 +140,9 @@ public class MustangJarLocatorTests
         Assert.Null(MustangJarLocator.ReadVersion(directory));
     }
 
+    /// <summary>
+    /// Verifies that null is returned when the jar is not a valid archive.
+    /// </summary>
     [Fact]
     public void WhenJarIsNotAValidArchiveThenReadVersionReturnsNull()
     {
@@ -119,6 +152,9 @@ public class MustangJarLocatorTests
         Assert.Null(MustangJarLocator.ReadVersion(directory));
     }
 
+    /// <summary>
+    /// Verifies that null is returned when the directory contains no jar.
+    /// </summary>
     [Fact]
     public void WhenNoJarExistsThenReadVersionReturnsNull()
     {
@@ -127,6 +163,9 @@ public class MustangJarLocatorTests
         Assert.Null(MustangJarLocator.ReadVersion(directory));
     }
 
+    /// <summary>
+    /// Verifies that a whitespace directory is rejected when reading the version.
+    /// </summary>
     [Fact]
     public void WhenDirectoryIsWhitespaceThenReadVersionThrowsArgumentException()
     {
