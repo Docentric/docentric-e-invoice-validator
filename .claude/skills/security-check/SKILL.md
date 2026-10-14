@@ -1,6 +1,6 @@
 ---
 name: security-check
-description: Check NuGet, .NET and npm dependencies for vulnerabilities and fix them.
+description: Audit NuGet, .NET and npm dependencies for vulnerabilities and deprecated packages, read GitHub security alerts and fix findings at the root cause. Use for security reviews and before releases.
 ---
 Follow "Dependency and Security Checking" in `AGENTS.md`.
 

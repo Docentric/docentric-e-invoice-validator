@@ -1,6 +1,6 @@
 ---
 name: create-branch
-description: Read a GitHub issue and create a branch following repository conventions.
+description: Read a GitHub issue, then create and check out a branch named by repository convention. Use when starting work on an issue. Does not implement anything.
 argument-hint: "[issue number]"
 disable-model-invocation: true
 ---

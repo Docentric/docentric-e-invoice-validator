@@ -1,6 +1,6 @@
 ---
 name: document-public-members
-description: Add missing XML documentation (C#) or TSDoc (TypeScript) to public members in the selected files.
+description: Add missing XML documentation (C#) or TSDoc (TypeScript) to public members in the selected files. Use when asked to document code. Never changes behavior.
 ---
 Find public types and members in the selected file(s) that lack documentation and add it.
 

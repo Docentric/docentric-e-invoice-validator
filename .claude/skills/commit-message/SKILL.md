@@ -1,6 +1,6 @@
 ---
 name: commit-message
-description: Generate a commit message for the current staged changes following repository conventions.
+description: Write a commit message in the repository format for the current staged changes (or working tree). Use when the user asks for a commit message. Only returns text and does not commit.
 ---
 Write a commit message for the current staged changes (or the working tree if nothing is staged).
 

@@ -53,7 +53,7 @@ Format: `#<issue> <Imperative summary>`
 ## Pull Requests
 
 - Target `main`. Title follows the commit format: `#<issue> <Imperative summary>`.
-- Description must include:
+- Description must include (the template in `.github/pull_request_template.md` provides these sections):
   1. **Summary**: what and why.
   2. **Related issue**: `Closes #<n>`.
   3. **Changes**: bullet list of notable changes.

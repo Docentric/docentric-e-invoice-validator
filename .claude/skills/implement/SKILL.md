@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Implement a GitHub issue on the current branch following repository conventions.
+description: Implement a GitHub issue on the current branch, including tests and docs, without committing. Use when the branch already exists. Use create-branch-implement-and-pr for the full flow.
 argument-hint: "[issue number]"
 disable-model-invocation: true
 ---

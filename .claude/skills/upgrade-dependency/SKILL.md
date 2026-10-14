@@ -1,6 +1,6 @@
 ---
 name: upgrade-dependency
-description: Upgrade a NuGet/npm package or the Mustang CLI as a dedicated change.
+description: Upgrade one NuGet or npm package, or the Mustang CLI JAR, as a dedicated change with release note review. Use when asked to bump a dependency version.
 argument-hint: "[package or Mustang CLI] [target version]"
 disable-model-invocation: true
 ---

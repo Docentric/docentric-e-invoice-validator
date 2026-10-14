@@ -1,6 +1,6 @@
 ---
 name: review-pull-request
-description: Review a GitHub pull request using the repository code review checklist.
+description: Review an existing GitHub pull request by number using the Code Review checklist and report findings without submitting a review. For local changes use review-implementation.
 argument-hint: "[PR number]"
 ---
 Review the pull request given as the argument (ask for the number if missing) using the GitHub MCP tools (details, diff, files, check runs, existing review comments).
