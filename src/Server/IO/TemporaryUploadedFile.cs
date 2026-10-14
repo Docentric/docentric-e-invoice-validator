@@ -26,13 +26,13 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
     public static async Task<TemporaryUploadedFile> CreateAsync(FileUploadRequest request, CancellationToken cancellationToken)
     {
         if (request?.File == null)
-            throw new ArgumentNullException(nameof(request.File), "The form in POST request did not contain a file.");
+            throw new ArgumentException("The form in POST request did not contain a file.", nameof(request));
 
         if (request.File.Length == 0)
-            throw new ArgumentException("Uploaded file is empty.", nameof(request.File));
+            throw new ArgumentException("Uploaded file is empty.", nameof(request));
 
         if (string.IsNullOrWhiteSpace(request.File.FileName))
-            throw new ArgumentNullException(nameof(request.File.FileName), "File uploaded is missing a filename.");
+            throw new ArgumentException("File uploaded is missing a filename.", nameof(request));
 
         // Keep the original extension if present
         string extension = Path.GetExtension(request.File.FileName);
@@ -41,8 +41,16 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
             $"{Guid.NewGuid():N}{extension}"
         );
 
-        await using FileStream targetStream = File.Create(tempFilePath);
-        await request.File.CopyToAsync(targetStream, cancellationToken);
+        try
+        {
+            await using FileStream targetStream = File.Create(tempFilePath);
+            await request.File.CopyToAsync(targetStream, cancellationToken);
+        }
+        catch
+        {
+            TryDelete(tempFilePath);
+            throw;
+        }
 
         return new TemporaryUploadedFile(tempFilePath);
     }
@@ -55,10 +63,15 @@ public sealed class TemporaryUploadedFile : IAsyncDisposable, IDisposable
         if (_disposed) return;
         _disposed = true;
 
+        TryDelete(FilePath);
+    }
+
+    private static void TryDelete(string filePath)
+    {
         try
         {
-            if (File.Exists(FilePath))
-                File.Delete(FilePath);
+            if (File.Exists(filePath))
+                File.Delete(filePath);
         }
         catch
         {

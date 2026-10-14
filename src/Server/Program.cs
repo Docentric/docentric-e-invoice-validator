@@ -44,6 +44,9 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<JavaService>();
 builder.Services.AddSingleton<MustangCliService>();
 
+// Warm-up: loads the JVM and jar into the OS file cache so the first real request is not slow.
+builder.Services.AddHostedService<MustangWarmUpService>();
+
 WebApplication app = builder.Build();
 
 // Add Request Timeout middleware (must be early in pipeline)

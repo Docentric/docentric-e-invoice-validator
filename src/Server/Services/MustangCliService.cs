@@ -11,12 +11,21 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 public sealed class MustangCliService(ILogger<MustangCliService> logger)
 {
     /// <summary>
-    /// The version of Mustang CLI being used.
+    /// The output language used when none is specified.
     /// </summary>
-    public const string MustangCliVersion = "2.22.0";
-    private const string MustangJarFile = $"Mustang-CLI-{MustangCliVersion}.jar";
+    public const string DefaultLanguage = "en";
+
+    /// <summary>
+    /// The output languages supported by Mustang CLI.
+    /// </summary>
+    public static readonly IReadOnlySet<string> SupportedLanguages = new HashSet<string>(["en", "fr", "de"], StringComparer.OrdinalIgnoreCase);
+
     private const string JavaMaxMemory = "-Xmx1G";
     private const string FileEncoding = "-Dfile.encoding=UTF-8";
+
+    // Short-lived CLI process: fast startup matters more than peak throughput.
+    private const string JavaFastStartup = "-XX:TieredStopAtLevel=1";
+    private const string JavaSerialGc = "-XX:+UseSerialGC";
 
     /// <summary>
     /// Validates a ZuGFeRD/Factur-X PDF file.
@@ -42,11 +51,22 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// </summary>
     /// <param name="sourceFilePath">The path to the XML file.</param>
     /// <param name="outputFilePath">The path where the generated PDF should be saved.</param>
+    /// <param name="language">The output language (en, fr or de). Falls back to <see cref="DefaultLanguage"/> when null or empty.</param>
     /// <param name="cancellationToken">The cancellation token for managing task cancellation.</param>
     /// <returns>A <see cref="MustangCliResult"/> containing conversion results.</returns>
-    public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath, CancellationToken cancellationToken)
-        => ExecuteAsync("pdf", ["--source", sourceFilePath, "--out", outputFilePath], cancellationToken);
+    /// <remarks>
+    /// The language is always passed explicitly, because Mustang CLI otherwise prompts for it on stdin and blocks.
+    /// </remarks>
+    public Task<MustangCliResult> ConvertXmlToPdfAsync(string sourceFilePath, string outputFilePath, string? language, CancellationToken cancellationToken)
+        => ExecuteAsync("pdf", ["--source", sourceFilePath, "--out", outputFilePath, "--language", string.IsNullOrWhiteSpace(language) ? DefaultLanguage : language], cancellationToken);
 
+
+    /// <summary>
+    /// Gets the version of the Mustang CLI jar file deployed next to the application.
+    /// </summary>
+    /// <returns>The version read from the embedded Maven <c>pom.properties</c> of the jar, or <see langword="null"/> when the jar file is not found, cannot be read or does not contain a valid version.</returns>
+    public string? GetMustangCliVersion()
+        => MustangJarLocator.ReadVersion(AppContext.BaseDirectory);
 
     /// <summary>
     /// Checks if Mustang CLI is available by executing the help command.
@@ -75,10 +95,17 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
     /// <returns>A <see cref="MustangCliResult"/> containing the exit code, stdout, and stderr.</returns>
     private async Task<MustangCliResult> ExecuteAsync(string action, string[] additionalArguments, CancellationToken cancellationToken)
     {
+        string? mustangJarFile = MustangJarLocator.FindJarFileName(AppContext.BaseDirectory);
+
+        if (mustangJarFile is null)
+        {
+            return MustangCliResult.Failed($"Mustang CLI jar file was not found (action: {action}).");
+        }
+
         ProcessStartInfo processStartInfo = new()
         {
             FileName = "java",
-            ArgumentList = { JavaMaxMemory, FileEncoding, "-jar", MustangJarFile },
+            ArgumentList = { JavaMaxMemory, JavaFastStartup, JavaSerialGc, FileEncoding, "-jar", mustangJarFile },
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

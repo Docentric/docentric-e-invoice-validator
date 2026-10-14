@@ -99,6 +99,16 @@ jobs:
       working-directory: src/WebUI
       run: npm ci
 
+    # Style checks. Non-blocking until the existing violations are fixed; then remove continue-on-error
+    - name: Check C# formatting
+      continue-on-error: true
+      run: dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes --no-restore --verbosity minimal
+
+    - name: Lint web UI
+      continue-on-error: true
+      working-directory: src/WebUI
+      run: npm run lint
+
     # Build and test
     - name: Build solution
       run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore /p:Version=${{ steps.is_release.outputs.version }} /p:TreatWarningsAsErrors=true
@@ -113,13 +123,44 @@ jobs:
       with:
         reports: test-results/**/coverage.cobertura.xml
         targetdir: coverage-report
-        reporttypes: Html;MarkdownSummaryGithub
+        reporttypes: Html;MarkdownSummaryGithub;Badges
 
     - name: Add coverage to job summary
       if: always()
       run: |
         if [ -f coverage-report/SummaryGithub.md ]; then
           cat coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    # Publish coverage badge to the 'badges' branch (main only; uses contents: write from workflow permissions)
+    - name: Publish coverage badge
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        set -euo pipefail
+        SVG="$PWD/coverage-report/badge_linecoverage.svg"
+        if [ ! -f "$SVG" ]; then
+          echo "::warning::Coverage badge was not generated; skipping publish"
+          exit 0
+        fi
+        WORKTREE="$(mktemp -d)"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        if git ls-remote --exit-code --heads origin badges > /dev/null; then
+          git fetch origin badges
+          git worktree add -B badges "$WORKTREE" origin/badges
+        else
+          git worktree add --detach "$WORKTREE"
+          git -C "$WORKTREE" checkout --orphan badges
+          git -C "$WORKTREE" rm -rf --quiet .
+        fi
+        cp "$SVG" "$WORKTREE/ci-coverage.svg"
+        cd "$WORKTREE"
+        git add ci-coverage.svg
+        if git diff --cached --quiet; then
+          echo "Coverage badge unchanged"
+        else
+          git commit -m "Update coverage badge"
+          git push origin badges
         fi
 
     - name: Upload test results and coverage

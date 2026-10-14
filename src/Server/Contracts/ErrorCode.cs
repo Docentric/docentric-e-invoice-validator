@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Reflection;
 
 namespace Docentric.EInvoice.Validator.RestServer.Contracts;
 
@@ -22,7 +23,7 @@ public enum ErrorCode
     Success = 0,
 
     // Mustang CLI Error Codes (1-27)
-    
+
     /// <summary>
     /// File not found.
     /// </summary>
@@ -224,7 +225,7 @@ public static class ErrorCodeExtensions
     /// <returns>A friendly error message describing the error.</returns>
     public static string GetFriendlyMessage(this ErrorCode errorCode)
     {
-        var field = errorCode.GetType().GetField(errorCode.ToString());
+        FieldInfo? field = errorCode.GetType().GetField(errorCode.ToString());
         if (field != null)
         {
             var attribute = (DescriptionAttribute?)Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute));

@@ -9,10 +9,11 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <param name="Overall">Status of the top-level summary.</param>
 /// <param name="Pdf">Status of the PDF section summary.</param>
 /// <param name="Xml">Status of the embedded XML section summary.</param>
-public sealed record MustangValidationStatuses(string Overall, string Pdf, string Xml)
+/// <param name="Signature">Value of the <c>signature</c> element (e.g. "valid", "invalid").</param>
+public sealed record MustangValidationStatuses(string Overall, string Pdf, string Xml, string Signature)
 {
     /// <summary>Statuses used when the report is missing or cannot be interpreted.</summary>
-    public static MustangValidationStatuses Unknown { get; } = new(UnknownStatus, UnknownStatus, UnknownStatus);
+    public static MustangValidationStatuses Unknown { get; } = new(UnknownStatus, UnknownStatus, UnknownStatus, UnknownStatus);
 
     internal const string UnknownStatus = "unknown";
 }
@@ -43,7 +44,15 @@ public static class MustangValidationReportParser
         return new MustangValidationStatuses(
             GetSummaryStatus(root),
             GetSummaryStatus(root?.Element("pdf")),
-            GetSummaryStatus(root?.Element("xml")));
+            GetSummaryStatus(root?.Element("xml")),
+            GetSignatureStatus(root));
+    }
+
+    // The signature element's location in the report is not fixed, so search all descendants.
+    private static string GetSignatureStatus(XElement? root)
+    {
+        string? value = root?.Descendants("signature").FirstOrDefault()?.Value.Trim();
+        return string.IsNullOrEmpty(value) ? MustangValidationStatuses.UnknownStatus : value;
     }
 
     private static string GetSummaryStatus(XElement? parent) =>
