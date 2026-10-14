@@ -10,7 +10,12 @@ namespace Docentric.EInvoice.Validator.RestServer.Services;
 /// <param name="logger">The logger instance for logging information and errors.</param>
 public sealed class MustangCliService(ILogger<MustangCliService> logger)
 {
-    private const string JavaMaxMemory = "-Xmx1G";    private const string FileEncoding = "-Dfile.encoding=UTF-8";
+    private const string JavaMaxMemory = "-Xmx1G";
+    private const string FileEncoding = "-Dfile.encoding=UTF-8";
+
+    // Short-lived CLI process: fast startup matters more than peak throughput.
+    private const string JavaFastStartup = "-XX:TieredStopAtLevel=1";
+    private const string JavaSerialGc = "-XX:+UseSerialGC";
 
     /// <summary>
     /// Validates a ZuGFeRD/Factur-X PDF file.
@@ -86,7 +91,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
         ProcessStartInfo processStartInfo = new()
         {
             FileName = "java",
-            ArgumentList = { JavaMaxMemory, FileEncoding, "-jar", mustangJarFile },
+            ArgumentList = { JavaMaxMemory, JavaFastStartup, JavaSerialGc, FileEncoding, "-jar", mustangJarFile },
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

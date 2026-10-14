@@ -46,6 +46,25 @@ builder.Services.AddSingleton<MustangCliService>();
 
 WebApplication app = builder.Build();
 
+// Warm-up: loads the JVM and jar into the OS file cache so the first real request is not slow.
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    _ = Task.Run(async () =>
+    {
+        // Best effort only: a warm-up failure must never affect the application.
+        try
+        {
+            MustangCliService mustangCliService = app.Services.GetRequiredService<MustangCliService>();
+            bool available = await mustangCliService.CheckAvailabilityAsync(app.Lifetime.ApplicationStopping);
+            app.Logger.LogInformation("Mustang CLI warm-up finished (available: {Available}).", available);
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Mustang CLI warm-up failed.");
+        }
+    });
+});
+
 // Add Request Timeout middleware (must be early in pipeline)
 app.UseRequestTimeouts();
 
