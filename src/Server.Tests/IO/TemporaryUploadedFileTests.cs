@@ -18,6 +18,8 @@ public class TemporaryUploadedFileTests
         return new FileUploadRequest { File = new FormFile(new MemoryStream(bytes), 0, bytes.Length, "file", fileName) };
     }
 
+    private static FileUploadRequest CreateRequest(FailingFormFile file) => new() { File = file };
+
     /// <summary>
     /// Verifies that the uploaded content is written to the temporary file.
     /// </summary>
@@ -121,5 +123,65 @@ public class TemporaryUploadedFileTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             TemporaryUploadedFile.CreateAsync(request, TestContext.Current.CancellationToken));
+    }
+
+    /// <summary>
+    /// Verifies that a failure while copying the upload propagates and the partially written file is deleted.
+    /// </summary>
+    [Fact]
+    public async Task WhenCopyFailsThenExceptionPropagatesAndPartialFileIsDeleted()
+    {
+        FailingFormFile formFile = new(new InvalidOperationException("copy failed"));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            TemporaryUploadedFile.CreateAsync(CreateRequest(formFile), TestContext.Current.CancellationToken));
+
+        Assert.False(File.Exists(formFile.TargetPath));
+    }
+
+    /// <summary>
+    /// Verifies that a cancellation while copying the upload propagates and the partially written file is deleted.
+    /// </summary>
+    [Fact]
+    public async Task WhenCopyIsCanceledThenCancellationPropagatesAndPartialFileIsDeleted()
+    {
+        FailingFormFile formFile = new(new OperationCanceledException());
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            TemporaryUploadedFile.CreateAsync(CreateRequest(formFile), TestContext.Current.CancellationToken));
+
+        Assert.False(File.Exists(formFile.TargetPath));
+    }
+
+    /// <summary>
+    /// Form file test double that writes some bytes to the target stream and then throws.
+    /// </summary>
+    private sealed class FailingFormFile(Exception exception) : IFormFile
+    {
+        public string? TargetPath { get; private set; }
+
+        public string ContentType => "application/xml";
+
+        public string ContentDisposition => string.Empty;
+
+        public IHeaderDictionary Headers => new HeaderDictionary();
+
+        public long Length => 5;
+
+        public string Name => "file";
+
+        public string FileName => "invoice.xml";
+
+        public async Task CopyToAsync(Stream target, CancellationToken cancellationToken = default)
+        {
+            TargetPath = ((FileStream)target).Name;
+            await target.WriteAsync("hello"u8.ToArray(), cancellationToken);
+            await target.FlushAsync(cancellationToken);
+            throw exception;
+        }
+
+        public void CopyTo(Stream target) => throw new NotSupportedException();
+
+        public Stream OpenReadStream() => throw new NotSupportedException();
     }
 }
