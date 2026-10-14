@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml/badge.svg)](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml)
 [![Coverage (CI)](https://raw.githubusercontent.com/Docentric/docentric-e-invoice-validator/badges/ci-coverage.svg)](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml)
-[![Release](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml/badge.svg)](https://github.com/Docentric/docentric-e-invoice-validator/actions/workflows/build.yml)
+[![GitHub release](https://img.shields.io/github/v/release/Docentric/docentric-e-invoice-validator)](https://github.com/Docentric/docentric-e-invoice-validator/releases/latest)
 [![Docker Hub](https://img.shields.io/docker/v/docentric/e-invoice-validator?label=Docker%20Hub)](https://hub.docker.com/r/docentric/e-invoice-validator)
 [![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
