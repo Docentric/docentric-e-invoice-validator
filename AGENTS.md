@@ -147,6 +147,17 @@ cd src/WebUI; npm install; npm run build
 - Keep `DOTNET_VERSION`, `NODE_VERSION` and `SOLUTION_PATH` in the workflow `env` block aligned with `Directory.Build.props` and the README prerequisites.
 - Use `npm ci` (not `npm install`) and `--no-restore`/`--no-build` where already established; keep `timeout-minutes` and `concurrency` settings.
 - Validate workflow changes on a branch and check the Actions run before requesting review.
+- The build job also runs `dotnet format --verify-no-changes` and `npm run lint`. Both are currently non-blocking (`continue-on-error`) because of existing violations. Run them locally before pushing, do not add new violations, and remove `continue-on-error` once the existing ones are fixed.
+
+### Branch protection (repository settings, configured by a maintainer)
+
+Protect `main` with a ruleset or branch protection rule:
+
+- Require a pull request before merging, with at least one approval, dismissal of stale approvals on new commits and resolution of all conversations.
+- Require status checks to pass and require the branch to be up to date: `Build Solution` (add the Docker job if it must gate merges).
+- Block force pushes and deletion. Restrict who can push, and apply the rules to administrators too.
+- Restrict creation of `v*` tags to maintainers, because tags trigger releases.
+- Optionally enable Copilot code review as an automatic reviewer.
 
 ## GitHub Access
 

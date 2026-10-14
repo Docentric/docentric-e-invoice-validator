@@ -99,6 +99,16 @@ jobs:
       working-directory: src/WebUI
       run: npm ci
 
+    # Style checks. Non-blocking until the existing violations are fixed; then remove continue-on-error
+    - name: Check C# formatting
+      continue-on-error: true
+      run: dotnet format ${{ env.SOLUTION_PATH }} --verify-no-changes --no-restore --verbosity minimal
+
+    - name: Lint web UI
+      continue-on-error: true
+      working-directory: src/WebUI
+      run: npm run lint
+
     # Build and test
     - name: Build solution
       run: dotnet build ${{ env.SOLUTION_PATH }} --configuration Release --no-restore /p:Version=${{ steps.is_release.outputs.version }} /p:TreatWarningsAsErrors=true
