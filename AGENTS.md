@@ -233,6 +233,20 @@ Reusable workflows live in `.claude/skills/<name>/SKILL.md` (same format for Cop
 
 Keep skills short, reference this file instead of repeating its rules, and update them when conventions change.
 
+## Maintaining This File
+
+This file is loaded into every agent session, so its size has a cost. Current size is about 290 lines (roughly 5,000 tokens).
+
+- Budget: split the file when it exceeds about 350 lines or 7,000 tokens, or when a new section applies to only one area of the repository.
+- Do not add rules that `.editorconfig`, analyzers or CI already enforce. Prefer enforcing a rule mechanically over describing it here.
+- Planned split, in this order:
+  1. Move "Dependency and Security Checking" into the `security-check` skill, because only that task needs it.
+  2. Move "Build Pipelines (GitHub Actions)" into `.github/instructions/workflows.instructions.md` with `applyTo: ".github/workflows/**"`.
+  3. Move "C# Code Style and Naming" and "Documentation of Public Members" into `.github/instructions/csharp.instructions.md` with `applyTo: "src/Server/**/*.cs"`.
+  4. Move "Tests" and "Frontend" into scoped files with `applyTo` set to `src/Server.Tests/**` and `src/WebUI/**`.
+- Claude Code does not read `.github/instructions`. When a section is moved there, add an `@` import of the new file to `CLAUDE.md` or a path scoped file under `.claude/rules/`, so both tools keep the same rules.
+- Keep branching, commits, pull requests, build commands, writing style and general principles in this file, because they apply to every task.
+
 ## Writing Style
 
 Applies to everything written for people: chat answers, commit messages, PR descriptions, review comments, documentation and code comments. Write plainly, specifically and naturally. Prefer complete sentences over slogans, hype, pseudo profundity or dramatic copywriting. These rules override any default tendency toward punchy, inspirational, promotional or thought leadership writing. When in doubt, choose the less theatrical version.
