@@ -303,8 +303,8 @@ jobs:
           type=semver,pattern={{version}}
           # Tag "latest" only for stable releases (no prerelease suffix)
           type=raw,value=latest,enable=${{ needs.build.outputs.is_stable == 'true' }}
-          # Fallback tag so non-release builds still produce a tag and version
-          type=sha
+          # Fallback tag so non-release builds still produce a tag and version (not pushed on releases)
+          type=sha,enable=${{ needs.build.outputs.is_release != 'true' }}
 
     # Build the image on every run; multi-arch and push only for v* tags
     - name: Build and push Docker image
