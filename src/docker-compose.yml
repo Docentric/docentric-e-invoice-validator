@@ -24,8 +24,9 @@ services:
     container_name: docentric-e-invoice-validator
 
     # Ports (HTTP only — no HTTPS certs inside container)
+    # Random free host port by default. To pin a host port, use "<host-port>:8080".
     ports:
-      - "8080:8080"
+      - "8080"
 
     # Clean environment config for ASP.NET Core
     environment:

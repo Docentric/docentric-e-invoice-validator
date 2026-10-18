@@ -46,6 +46,24 @@ docker run -p 18889:8080 docentric/e-invoice-validator:latest
 
 Then open your browser to `http://localhost:18889`
 
+#### Running on a random host port
+
+Docker publishes no host port unless you ask for one, so `docker run docentric/e-invoice-validator:latest` starts the service (listening on port 8080 inside the container) but it is not reachable from the host. To let Docker pick a free host port, use `-P` (publish all exposed ports) or `-p 8080`:
+
+```bash
+docker run -d --name e-invoice-validator -P docentric/e-invoice-validator:latest
+```
+
+Look up the mapped host port with:
+
+```bash
+docker port e-invoice-validator 8080
+```
+
+or check the `PORTS` column of `docker ps` (for example `0.0.0.0:32768->8080/tcp`). Then open `http://localhost:<mapped-port>`.
+
+Explicit mappings such as `-p 18889:8080` work as before.
+
 ## Installation & Usage
 
 ### Prerequisites
@@ -106,6 +124,10 @@ Then run it:
 ```
 
 The application will be available at `http://localhost:18889`.
+
+### Using Docker Compose
+
+`src/docker-compose.yml` publishes the service on a random free host port (`- "8080"`). Look up the port with `docker compose port e-invoice-validator 8080`. To pin a host port, change the mapping to `"<host-port>:8080"`.
 
 ## API Usage
 
