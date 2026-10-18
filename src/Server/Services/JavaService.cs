@@ -23,7 +23,7 @@ public sealed partial class JavaService(ILogger<JavaService> logger)
 
         ProcessStartInfo processStartInfo = new()
         {
-            FileName = "java",
+            FileName = JavaLocator.GetExecutable(),
             Arguments = "-XshowSettings:properties -version",
             RedirectStandardOutput = true,
             RedirectStandardError = true,

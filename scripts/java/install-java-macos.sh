@@ -30,21 +30,21 @@ java_major() {
   }
 }
 
-# Returns 0 and prints the path if a suitable java is found.
-# /usr/bin/java is a stub on macOS, so the real home is resolved with java_home.
+# Prints the path of a suitable java and returns 0, or returns 1 if there is none.
+# The validator launches JAVA_HOME/bin/java when it exists and java from PATH otherwise,
+# so only that executable is checked.
 find_java() {
-  candidates="${JAVA_HOME:-}/bin/java"
-  if [ -x /usr/libexec/java_home ] && home=$(/usr/libexec/java_home -v "$MIN_MAJOR+" 2>/dev/null); then
-    candidates="$candidates $home/bin/java"
+  if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    candidate="$JAVA_HOME/bin/java"
+  else
+    candidate=$(command -v java 2>/dev/null || true)
   fi
-  for candidate in $candidates; do
-    [ -x "$candidate" ] || continue
-    major=$(java_major "$candidate")
-    if [ -n "$major" ] && [ "$major" -ge "$MIN_MAJOR" ] 2>/dev/null; then
-      echo "$candidate"
-      return 0
-    fi
-  done
+  [ -n "$candidate" ] && [ -x "$candidate" ] || return 1
+  major=$(java_major "$candidate")
+  if [ -n "$major" ] && [ "$major" -ge "$MIN_MAJOR" ] 2>/dev/null; then
+    echo "$candidate"
+    return 0
+  fi
   return 1
 }
 
@@ -82,9 +82,15 @@ install_from_archive() {
   trap 'rm -rf "$tmp"' EXIT
 
   echo "Downloading Temurin $TEMURIN_VERSION JRE ($arch)..."
-  # The API redirects to the GitHub release asset, which has a .sha256.txt next to it.
-  final_url=$(curl -fsSL -o "$tmp/jre.tar.gz" -w '%{url_effective}' "$url")
-  expected=$(curl -fsSL "$final_url.sha256.txt" | awk '{print $1}')
+  # The API answers with a redirect to the public release asset. Only this first redirect
+  # is resolved, so the archive and its .sha256.txt come from the same release asset URL.
+  asset_url=$(curl -fsS -o /dev/null -w '%{redirect_url}' "$url")
+  if [ -z "$asset_url" ]; then
+    echo "Could not resolve the Temurin release asset." >&2
+    return 1
+  fi
+  curl -fsSL -o "$tmp/jre.tar.gz" "$asset_url"
+  expected=$(curl -fsSL "$asset_url.sha256.txt" | awk '{print $1}')
   actual=$(shasum -a 256 "$tmp/jre.tar.gz" | awk '{print $1}')
   if [ -z "$expected" ] || [ "$expected" != "$actual" ]; then
     echo "Checksum mismatch for the downloaded JRE." >&2

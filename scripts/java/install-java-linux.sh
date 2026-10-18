@@ -27,16 +27,20 @@ java_major() {
   }
 }
 
-# Returns 0 and prints the path if a suitable java is found in JAVA_HOME or PATH.
+# Returns 0 and prints the path if the java that the validator uses is suitable.
+# The validator launches JAVA_HOME/bin/java when it exists and java from PATH otherwise.
 find_java() {
-  for candidate in "${JAVA_HOME:-}/bin/java" "$(command -v java 2>/dev/null || true)"; do
-    [ -x "$candidate" ] || continue
-    major=$(java_major "$candidate")
-    if [ -n "$major" ] && [ "$major" -ge "$MIN_MAJOR" ] 2>/dev/null; then
-      echo "$candidate"
-      return 0
-    fi
-  done
+  if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    candidate="$JAVA_HOME/bin/java"
+  else
+    candidate=$(command -v java 2>/dev/null || true)
+  fi
+  [ -n "$candidate" ] && [ -x "$candidate" ] || return 1
+  major=$(java_major "$candidate")
+  if [ -n "$major" ] && [ "$major" -ge "$MIN_MAJOR" ] 2>/dev/null; then
+    echo "$candidate"
+    return 0
+  fi
   return 1
 }
 
@@ -104,5 +108,5 @@ if found=$(find_java); then
   exit 0
 fi
 
-echo "Installation finished but Java
+echo "Installation finished but Java $MIN_MAJOR+ could not be verified. Run 'java -version'." >&2
 exit 1

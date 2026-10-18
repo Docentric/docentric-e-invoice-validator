@@ -40,17 +40,22 @@ function Get-JavaMajorVersion([string]$JavaExecutable) {
 }
 
 function Find-SuitableJava {
-    $candidates = @()
-    if ($env:JAVA_HOME) { $candidates += (Join-Path $env:JAVA_HOME 'bin\java.exe') }
-    $onPath = Get-Command java.exe -ErrorAction SilentlyContinue
-    if ($onPath) { $candidates += $onPath.Source }
+    # The validator launches JAVA_HOME\bin\java.exe when it exists and java from PATH otherwise,
+    # so only that executable is checked.
+    $candidate = $null
+    if ($env:JAVA_HOME) {
+        $homeJava = Join-Path $env:JAVA_HOME 'bin\java.exe'
+        if (Test-Path -LiteralPath $homeJava) { $candidate = $homeJava }
+    }
+    if (-not $candidate) {
+        $onPath = Get-Command java.exe -ErrorAction SilentlyContinue
+        if ($onPath) { $candidate = $onPath.Source }
+    }
+    if (-not $candidate) { return $null }
 
-    foreach ($candidate in $candidates) {
-        if (-not (Test-Path -LiteralPath $candidate)) { continue }
-        $major = Get-JavaMajorVersion $candidate
-        if ($major -and $major -ge $MinimumMajorVersion) {
-            return [pscustomobject]@{ Path = $candidate; Major = $major }
-        }
+    $major = Get-JavaMajorVersion $candidate
+    if ($major -and $major -ge $MinimumMajorVersion) {
+        return [pscustomobject]@{ Path = $candidate; Major = $major }
     }
     return $null
 }
@@ -60,7 +65,7 @@ function Install-WithWinget {
     if (-not $winget) { return $false }
 
     Write-Host "Installing Temurin $TemurinFeatureVersion JRE with winget..."
-    & $winget.Source install --exact --id "EclipseAdoptium.Temurin.$TemurinFeatureVersion.JRE" --silent --accept-package-agreements --accept-source-agreements
+    & $winget.Source install --exact --id "EclipseAdoptium.Temurin.$TemurinFeatureVersion.JRE" --silent --accept-package-agreements --accept-source-agreements | Out-Host
     return ($LASTEXITCODE -eq 0)
 }
 
@@ -71,21 +76,21 @@ function Install-FromZip {
         default { throw "Unsupported processor architecture: $($env:PROCESSOR_ARCHITECTURE)" }
     }
 
-    $url = "https://api.adoptium.net/v3/binary/latest/$TemurinFeatureVersion/ga/windows/$architecture/jre/hotspot/normal/eclipse"
+    $url = "https://api.adoptium.net/v3/assets/latest/$TemurinFeatureVersion/hotspot?architecture=$architecture&image_type=jre&os=windows&vendor=eclipse"
     $temp = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $temp | Out-Null
 
     try {
         $zipPath = Join-Path $temp 'temurin-jre.zip'
         Write-Host "Downloading Temurin $TemurinFeatureVersion JRE ($architecture)..."
-        Invoke-WebRequest -Uri $url -OutFile $zipPath -UseBasicParsing
-
-        # The API redirects to the GitHub release asset, which has a .sha256.txt next to it.
-        $response = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing
-        $finalUrl = $response.BaseResponse.RequestMessage.RequestUri.AbsoluteUri
-        $checksumText = (Invoke-WebRequest -Uri "$finalUrl.sha256.txt" -UseBasicParsing).Content
-        if ($checksumText -is [byte[]]) { $checksumText = [Text.Encoding]::ASCII.GetString($checksumText) }
-        $expected = ($checksumText.Trim() -split '\s+')[0].ToLowerInvariant()
+        # One metadata response provides the archive link and its checksum, so both belong to the same release.
+        $metadata = Invoke-RestMethod -Uri $url -UseBasicParsing
+        $package = @($metadata)[0].binary.package
+        if (-not $package -or -not $package.link -or -not $package.checksum) {
+            throw 'The Adoptium API response does not contain a JRE package with a checksum.'
+        }
+        Invoke-WebRequest -Uri $package.link -OutFile $zipPath -UseBasicParsing
+        $expected = $package.checksum.ToLowerInvariant()
         $actual = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
         if ($expected -ne $actual) {
             throw "Checksum mismatch for the downloaded JRE (expected $expected, got $actual)."
