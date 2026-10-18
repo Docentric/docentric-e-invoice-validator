@@ -15,6 +15,7 @@ REST API and web UI for validating ZuGFeRD / Factur-X e-invoices (PDF and XML). 
 | `.editorconfig` | Authoritative formatting and naming rules. |
 | `.github/workflows/build.yml` | CI build. |
 | `.claude/skills/` | Shared agent skills (workflows), used by both Copilot and Claude Code. |
+| `docs/plans/` | Implementation plans created by agents. Excluded from source control (`.gitignore`). |
 
 Solution: `src/Docentric.EInvoice.Validator.slnx`.
 
@@ -31,7 +32,8 @@ Solution: `src/Docentric.EInvoice.Validator.slnx`.
 - Prefer simple, clear solutions over unnecessary abstractions.
 - Do not assume. When uncertain, verify or ask.
 - Inspect existing code and configuration before making changes.
-- Complete requested work end-to-end when practical. Run relevant verification before finishing and clearly report anything that could not be verified.
+- Create implementation plans as Markdown files in `docs/plans/` in the repository root. Do not commit them.
+- Complete requested work end-to-end when practical.
 
 ## Branching Strategy
 
