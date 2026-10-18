@@ -1,6 +1,6 @@
 #!/usr/bin/env pwsh
 
-docker buildx bake e-invoice-validator
+docker buildx bake --load e-invoice-validator
 
 if ($LASTEXITCODE -ne 0)
 {
