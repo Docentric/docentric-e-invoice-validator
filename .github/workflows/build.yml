@@ -174,52 +174,128 @@ jobs:
           coverage-report/
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
-    # Publish framework-dependent version (requires .NET runtime on target for x64 and arm64)
-    - name: Publish artifacts (x64)
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --runtime linux-x64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-x64
+    # Publish all platforms in Release configuration only. Framework-dependent for every build,
+    # self-contained only for release builds. The matching Java install script is added to each package.
+    - name: Publish artifacts
+      env:
+        VERSION: ${{ steps.is_release.outputs.version }}
+        IS_RELEASE: ${{ steps.is_release.outputs.value }}
+      run: |
+        set -euo pipefail
+        for RID in linux-x64 linux-arm64 win-x64 win-arm64 osx-x64 osx-arm64; do
+          OS="${RID%%-*}"
+          case "$OS" in
+            win)   SCRIPT_SRC="scripts/java/install-java.ps1";       SCRIPT_DST="install-java.ps1" ;;
+            osx)   SCRIPT_SRC="scripts/java/install-java-macos.sh";  SCRIPT_DST="install-java.sh" ;;
+            linux) SCRIPT_SRC="scripts/java/install-java-linux.sh";  SCRIPT_DST="install-java.sh" ;;
+          esac
 
-    - name: Publish artifacts (arm64)
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --runtime linux-arm64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-arm64
+          for VARIANT in framework-dependent self-contained; do
+            if [[ "$VARIANT" == "self-contained" ]]; then
+              [[ "$IS_RELEASE" == "true" ]] || continue
+              SC_ARGS=(--self-contained true)
+              OUT="publish/rest-server-self-contained-$RID"
+            else
+              SC_ARGS=(--self-contained false)
+              OUT="publish/rest-server-$RID"
+            fi
 
-    # Publish self-contained versions with embedded runtime for linux-x64 and linux-arm64 (only for release builds)
-    - name: Publish self-contained artifacts (linux-x64)
-      if: steps.is_release.outputs.value == 'true'
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-x64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-self-contained-x64
-
-    - name: Publish self-contained artifacts (linux-arm64)
-      if: steps.is_release.outputs.value == 'true'
-      run: dotnet publish src/Server/RestServer.csproj --configuration Release --self-contained true --runtime linux-arm64 /p:Version=${{ steps.is_release.outputs.version }} --output ./publish/rest-server-self-contained-arm64
+            dotnet publish src/Server/RestServer.csproj --configuration Release "${SC_ARGS[@]}" --runtime "$RID" /p:Version="$VERSION" --output "./$OUT"
+            cp "$SCRIPT_SRC" "$OUT/$SCRIPT_DST"
+            if [[ "$SCRIPT_DST" == *.sh ]]; then chmod +x "$OUT/$SCRIPT_DST"; fi
+          done
+        done
 
     # Upload artifacts (retention depends on release type, see is_release step)
     - name: Upload build artifacts (linux-x64)
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
-        name: Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}
-        path: ./publish/rest-server-x64
+        name: Docentric.EInvoice.Validator.RestServer-linux-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-linux-x64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     - name: Upload build artifacts (linux-arm64)
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
-        name: Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}
-        path: ./publish/rest-server-arm64
+        name: Docentric.EInvoice.Validator.RestServer-linux-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-linux-arm64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
-    # Self-contained build only uploaded for release builds
+    - name: Upload build artifacts (win-x64)
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-win-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-win-x64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload build artifacts (win-arm64)
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-win-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-win-arm64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload build artifacts (osx-x64)
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-osx-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-osx-x64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload build artifacts (osx-arm64)
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-osx-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-osx-arm64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    # Self-contained builds only uploaded for release builds
     - name: Upload self-contained build artifacts (linux-x64)
       if: steps.is_release.outputs.value == 'true'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
-        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}
-        path: ./publish/rest-server-self-contained-x64
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-linux-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-linux-x64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     - name: Upload self-contained build artifacts (linux-arm64)
       if: steps.is_release.outputs.value == 'true'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
       with:
-        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}
-        path: ./publish/rest-server-self-contained-arm64
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-linux-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-linux-arm64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload self-contained build artifacts (win-x64)
+      if: steps.is_release.outputs.value == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-win-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-win-x64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload self-contained build artifacts (win-arm64)
+      if: steps.is_release.outputs.value == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-win-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-win-arm64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload self-contained build artifacts (osx-x64)
+      if: steps.is_release.outputs.value == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-osx-x64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-osx-x64
+        retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
+
+    - name: Upload self-contained build artifacts (osx-arm64)
+      if: steps.is_release.outputs.value == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: Docentric.EInvoice.Validator.RestServer-Self-Contained-osx-arm64-${{ steps.is_release.outputs.version }}
+        path: ./publish/rest-server-self-contained-osx-arm64
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
     # Upload source code (only for release builds)
@@ -242,26 +318,25 @@ jobs:
         include-hidden-files: true # needed for the hidden files and folders (starting with ., like .github, .gitignore, etc.)
         retention-days: ${{ steps.is_release.outputs.artifact_retention_days }}
 
-    # Create ZIP archives for release builds
+    # Create ZIP archives for release builds (zip keeps the executable bit of the install scripts)
     - name: Create ZIP archives
       if: steps.is_release.outputs.value == 'true'
+      env:
+        VERSION: ${{ steps.is_release.outputs.version }}
       run: |
+        set -euo pipefail
         cd publish
-        zip -r Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}.zip rest-server-x64
-        zip -r Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}.zip rest-server-arm64
-        zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-x64
-        zip -r Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip rest-server-self-contained-arm64
+        for RID in linux-x64 linux-arm64 win-x64 win-arm64 osx-x64 osx-arm64; do
+          zip -r "Docentric.EInvoice.Validator.RestServer-$RID-$VERSION.zip" "rest-server-$RID"
+          zip -r "Docentric.EInvoice.Validator.RestServer-Self-Contained-$RID-$VERSION.zip" "rest-server-self-contained-$RID"
+        done
 
     # Create GitHub Release with ZIP artifacts (pre-releases are marked as such)
     - name: Create GitHub Release
       if: steps.is_release.outputs.value == 'true'
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3
       with:
-        files: |
-          publish/Docentric.EInvoice.Validator.RestServer-x64-${{ steps.is_release.outputs.version }}.zip
-          publish/Docentric.EInvoice.Validator.RestServer-arm64-${{ steps.is_release.outputs.version }}.zip
-          publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-x64-${{ steps.is_release.outputs.version }}.zip
-          publish/Docentric.EInvoice.Validator.RestServer-Self-Contained-arm64-${{ steps.is_release.outputs.version }}.zip
+        files: publish/*.zip
         generate_release_notes: true
         prerelease: ${{ steps.is_release.outputs.is_stable != 'true' }}
 

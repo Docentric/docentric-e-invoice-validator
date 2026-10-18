@@ -148,7 +148,7 @@ cd src/WebUI; npm install; npm run build
 ## Build Pipelines (GitHub Actions)
 
 - Workflow: `.github/workflows/build.yml` (jobs: build/test/publish, Docker image, GitHub release). Triggers: push to `main`, `develop`, `feature/**`, `v*` tags; pull requests to `main`/`develop`; manual dispatch.
-- The pipeline must stay green: restore, `npm ci`, build with `/p:TreatWarningsAsErrors=true`, tests with coverage, publish (x64 + arm64, self-contained on release), Docker image.
+publish in Release configuration only (linux/win/osx, x64 + arm64, self-contained on release, each with its Java install script from `scripts/java`), Docker image.
 - Release builds are triggered only by `v<SemVer>` tags; the version is injected through `/p:Version`. Never hard-code versions in workflows or project files.
 - Pin third-party actions to a full commit SHA with a version comment (e.g. `# v7`); do not switch to floating tags.
 - Use least-privilege `permissions` (elevate per job only where needed, e.g. `contents: write` for releases). Pass untrusted values (`github.ref_name`, PR titles, etc.) through `env:`, never directly into `run:` scripts.

@@ -65,7 +65,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # OCI Image labels (standardized metadata)
-ARG VERSION="25.1.0"
+ARG VERSION="2026.4.0"
 ARG BUILD_DATE="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 ARG VCS_REF="$(git rev-parse --short HEAD)"
 

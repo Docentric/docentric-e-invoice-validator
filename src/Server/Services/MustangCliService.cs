@@ -104,7 +104,7 @@ public sealed class MustangCliService(ILogger<MustangCliService> logger)
 
         ProcessStartInfo processStartInfo = new()
         {
-            FileName = "java",
+            FileName = JavaLocator.GetExecutable(),
             ArgumentList = { JavaMaxMemory, JavaFastStartup, JavaSerialGc, FileEncoding, "-jar", mustangJarFile },
             RedirectStandardOutput = true,
             RedirectStandardError = true,

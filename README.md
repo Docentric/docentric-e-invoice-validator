@@ -76,6 +76,28 @@ For local development, you need:
 - Visual Studio 2026 or JetBrains Rider (recommended IDEs)
 - Git
 
+### Running the Release Packages (Windows, macOS, Linux)
+
+Each [GitHub release](https://github.com/Docentric/docentric-e-invoice-validator/releases/latest) contains ZIP packages for every platform:
+
+| Platform | Framework-dependent (needs .NET 10 runtime) | Self-contained |
+|----------|---------------------------------------------|----------------|
+| Linux x64 / arm64 | `Docentric.EInvoice.Validator.RestServer-linux-<x64\|arm64>-<version>.zip` | `Docentric.EInvoice.Validator.RestServer-Self-Contained-linux-<x64\|arm64>-<version>.zip` |
+| Windows x64 / arm64 | `Docentric.EInvoice.Validator.RestServer-win-<x64\|arm64>-<version>.zip` | `Docentric.EInvoice.Validator.RestServer-Self-Contained-win-<x64\|arm64>-<version>.zip` |
+| macOS x64 / arm64 (Apple Silicon) | `Docentric.EInvoice.Validator.RestServer-osx-<x64\|arm64>-<version>.zip` | `Docentric.EInvoice.Validator.RestServer-Self-Contained-osx-<x64\|arm64>-<version>.zip` |
+
+> The Linux package names changed: they previously had no OS in the name (for example `RestServer-x64-<version>.zip`).
+
+The validator needs a Java runtime (JRE 11 or later). Every package contains a script that checks for Java and installs it if it is missing. The scripts are never run automatically:
+
+- **Windows**: `.\install-java.ps1` (add `-Force` for non-interactive mode). Uses winget, otherwise a checksum-verified Temurin 21 JRE download installed per user.
+- **macOS**: `./install-java.sh` (add `--yes` for non-interactive mode). Uses Homebrew, otherwise a checksum-verified Temurin 21 JRE download installed to `~/Library/Java/JavaVirtualMachines`.
+- **Linux**: `./install-java.sh` (add `--yes` for non-interactive mode). Uses `apt`, `dnf`, `yum`, `zypper` or `apk`; requires root or `sudo`.
+
+Exit codes: `0` Java 11+ available, `1` installation failed, `2` cancelled or unsupported system.
+
+**macOS note**: the binaries are not signed or notarized. Gatekeeper may block the first start; remove the quarantine flag with `xattr -dr com.apple.quarantine <folder>` or allow the app in System Settings.
+
 ### Building from Source
 
 1. **Clone the repository**:
